@@ -9,7 +9,6 @@ public class Minimap_Manager : MonoBehaviour
     [SerializeField] private Car local_car;
     [SerializeField] private Camera cam;
     [SerializeField] private GameObject minimap_point_prefab;
-    [SerializeField] private Material[] minimap_point_materials;
 
     [SerializeField] private List<GameObject> minimap_point_list;
     [SerializeField] private List<Transform> car_list;
@@ -38,7 +37,7 @@ public class Minimap_Manager : MonoBehaviour
         car_list.Add(car_.transform);
         GameObject go = Instantiate(minimap_point_prefab);
         minimap_point_list.Add(go);
-        go.GetComponent<MeshRenderer>().material = minimap_point_materials[car_.player_index];
+        go.GetComponent<MeshRenderer>().material = Color_Manager.instance.minimap_material_arr[(int)car_.material_index];
     }
 
     private void update_map()

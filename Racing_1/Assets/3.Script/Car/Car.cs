@@ -21,7 +21,7 @@ public class Car : NetworkBehaviour
     [SerializeField] private float original_front_wheel_friction_coeff;
     [SerializeField] private float drift_rigid_friction = 0.01f;
     [SerializeField] private float original_rigid_friction = 0.05f;
- 
+
     [SerializeField] private float steering = 0f;
     [SerializeField] private float steering_rate = 70f;
 
@@ -42,7 +42,8 @@ public class Car : NetworkBehaviour
 
     private WheelCollider[] wheels = new WheelCollider[4];
 
-    [SerializeField] private ParticleSystem booster_particle;
+    [SerializeField] private ParticleSystem[] booster_particle_arr;
+    [SerializeField] private ParticleSystem speed_particle;
     [SerializeField] private Rigidbody car;
     [SerializeField] private TrailRenderer[] trail_renderer_arr;
 
@@ -53,12 +54,26 @@ public class Car : NetworkBehaviour
 
     [Header("Network")]
     [SyncVar]
-    public uint player_index = 0;
+    public int player_index = 0;
+    [SyncVar]
+    public color_index material_index = 0;
 
-    [SerializeField] private Material[] car_material_arr;
     [SerializeField] private MeshRenderer car_body;
+
+    [Header("Lap_Check")]
+    [SerializeField] private LapCheckLine[] lap_check_line_arr;
+    [SerializeField] private bool[] lap_check_bool_arr;
+    [SyncVar]
+    [SerializeField] private bool is_finish = false;
+    [SyncVar]
+    [SerializeField] public float drive_time= 0f;
+    [SyncVar]
+    [SerializeField] public int lap_cnt = 0;
+
     private void Start()
     {
+        //init_lap_check(); 
+
         wheels[0] = LFW;
         wheels[1] = RFW;
         wheels[2] = LBW;
@@ -68,17 +83,37 @@ public class Car : NetworkBehaviour
         Minimap_Manager.instance.regist_car(this);
         init_car_model();
     }
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+        init_lap_check();
+    }
+    public override void OnStartLocalPlayer()
+    {
+        base.OnStartLocalPlayer();
+        MultiManager.instance.resist_local_car(this);
+    }
+
     // Update is called once per frame
     private void Update()
-    {
+    {        
+        draw_speed_particle();
+        draw_booster_particle();
+                
+        if (is_finish || !MultiManager.instance.is_start) return;
+        //update_drive_time();
         if (!isLocalPlayer) return;
+
+        Debug.Log($"ind: {player_index}, mat: {material_index}");
+        
         booster();
         if (Input.GetKeyDown(KeyCode.R)) {
             respawn();
         }
     }
     void FixedUpdate()
-    {
+    {                
+        if (is_finish || !MultiManager.instance.is_start){ return; }
         if (!isLocalPlayer) return;
         accel();
         brake();
@@ -87,35 +122,169 @@ public class Car : NetworkBehaviour
         draw_skid();
         rotate_wheel();
     }
+
+    private void draw_speed_particle() {
+        if ( car.velocity.magnitude * 7.5f >= 100f)
+        {
+            if (!speed_particle.isPlaying)
+            {
+                speed_particle.Play();
+            }            
+        }
+        else {
+            if (speed_particle.isPlaying) {
+                speed_particle.Stop();
+            }           
+        }
+    }
+    [Server]
+    private void init_lap_check() {        
+        is_finish = false;
+        LapCheckLine[] lcl = GameObject.FindObjectsOfType<LapCheckLine>();
+        lap_check_bool_arr = new bool[lcl.Length+1];
+        lap_check_line_arr = new LapCheckLine[lcl.Length];
+        for (int i =0; i < lcl.Length; i++) {            
+            LapCheckLine lcl_ = lcl[i].GetComponent<LapCheckLine>();
+            lap_check_line_arr[lcl_.col_cnt] = lcl_;
+            lap_check_bool_arr[i] = false;
+            if (lcl_.col_cnt == 0) {
+                lap_check_bool_arr[lap_check_bool_arr.Length-1] = false;
+            }
+        }
+    }
+
+    private void check_finish() {
+        for (int i =0; i < lap_check_bool_arr.Length; i++) {
+            if (!lap_check_bool_arr[i]) {
+                return;
+            }
+        }
+        for (int i = 1; i < lap_check_bool_arr.Length; i++)
+        {
+            lap_check_bool_arr[i] = false;
+        }
+        is_finish = true;
+        lap_cnt++;
+        init(false);
+        brake(1000f);
+        show_finish();
+    }
+    [ClientRpc]
+    private void check_finish_RPC()
+    {
+        check_finish();
+    }
+    [Server]
+    public void update_drive_time() {
+        if (is_finish || !MultiManager.instance.is_start) {
+            return;
+        }
+        drive_time = MultiManager.instance.timer;
+    }
+    private void show_finish() {
+        Debug.Log("Finish!!!!!!!!!!");
+    }
+    
+    private void OnTriggerEnter(Collider other)
+    {
+        if (isServer) {
+            if (other.gameObject.layer.Equals(LayerMask.NameToLayer("CheckBox")))
+            {
+                LapCheckLine lcl_ = other.GetComponent<LapCheckLine>();
+                if (lcl_.col_cnt == 0 && lap_check_bool_arr[0])
+                {
+                    for (int i =0; i < lap_check_bool_arr.Length-1; i++) {
+                        if (!lap_check_bool_arr[i]) {
+                            return;
+                        }
+                    }
+                    lap_check_bool_arr[lap_check_bool_arr.Length - 1] = true;
+                }
+                else
+                {
+                    if (lcl_.col_cnt == 0) {
+                        lap_check_bool_arr[lcl_.col_cnt] = true;
+                    }
+                    else if ( lap_check_bool_arr[lcl_.col_cnt - 1])
+                    {
+                        lap_check_bool_arr[lcl_.col_cnt] = true;
+                    }
+                    
+                    
+                }
+                check_finish();
+                if (is_finish)
+                {
+                    check_finish_RPC();
+                }
+            }
+        }        
+    }
+
     [Server]
     public void ask_player_index() {
-        player_index = MultiManager.instance.generate_player_index();
+        player_index = MultiManager.instance.generate_player_index(this);
     }
     public void init_car_model() {
-        car_body.material = car_material_arr[player_index];
+        car_body.material = Color_Manager.instance.car_material_arr[(int)material_index];
     }
+    public void set_car_model(color_index index_)
+    {
+        material_index = index_;
+        car_body.material = Color_Manager.instance.car_material_arr[(int)material_index];
+    }
+
+    #region booster
     private void booster() {
         if (Input.GetKeyDown(KeyCode.C) && Booster_Slider.instance.use_booster())
         {
             if (boost_co != null) {
                 StopCoroutine(boost_co);
-                booster_particle.Stop();
+                //booster_particle_stop();
             }
             boost_co = StartCoroutine(booster_co());
         }
     }
-
-    private IEnumerator booster_co() {
+    private IEnumerator booster_co()
+    {
         is_boosting = true;
         set_rigid_friction(drift_rigid_friction);
-        car.AddForce(car.transform.forward*3000f, ForceMode.Impulse);
+        car.AddForce(car.transform.forward * 3000f, ForceMode.Impulse);
         booster_coeff = 5f;
-        booster_particle.Play();
+        //booster_particle_play();
         yield return new WaitForSeconds(5f);
         booster_coeff = 1f;
-        booster_particle.Stop();
+        //booster_particle_stop();
         is_boosting = false;
     }
+    private void booster_particle_play(){
+        for (int i =0; i < booster_particle_arr.Length;i++) {
+            if (!booster_particle_arr[i].isPlaying) {
+                booster_particle_arr[i].Play();
+            }
+        }
+    }private void booster_particle_stop(){
+        for (int i = 0; i < booster_particle_arr.Length; i++)
+        {
+            if (booster_particle_arr[i].isPlaying)
+            {
+                booster_particle_arr[i].Stop();
+            }
+        }
+    }
+    private void draw_booster_particle()
+    {
+        if (is_boosting)
+        {
+            booster_particle_play();
+        }
+        else
+        {
+            booster_particle_stop();
+        }
+    }
+    #endregion
+
     private void accel() {
         motor_torque = Input.GetAxis("Vertical") * motor_torque_force * booster_coeff;
         LFW.motorTorque = motor_torque;
@@ -131,8 +300,14 @@ public class Car : NetworkBehaviour
         }
     }
 
-    private void brake() {
-        brake_torque = Input.GetAxis("Brake") * brake_torque_force;
+    private void brake(float torque = 0f) {
+        if (torque == 0)
+        {
+            brake_torque = Input.GetAxis("Brake") * brake_torque_force;
+        }
+        else {
+            brake_torque = torque;
+        }
         LFW.brakeTorque = brake_torque;
         RFW.brakeTorque = brake_torque;
         LBW.brakeTorque = brake_torque;
@@ -250,17 +425,19 @@ public class Car : NetworkBehaviour
         init();
     }
 
-    private void init() {
+    private void init(bool force_vel_zero = true) {
         skid_mark_off();
 
-        car.velocity = Vector3.zero;
-        car.angularVelocity = Vector3.zero;
+        if (force_vel_zero) {
+            car.velocity = Vector3.zero;
+            car.angularVelocity = Vector3.zero;
+        }        
         
         is_boosting = false;
         if (boost_co != null)
         {
             StopCoroutine(boost_co);
-            booster_particle.Stop();
+            //booster_particle_stop();
         }
         boost_co = null;
         

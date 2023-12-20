@@ -506,7 +506,7 @@
     "m_CustomColors": {
         "m_SerializableColors": []
     },
-    "m_ScreenSpaceType": 3
+    "m_ScreenSpaceType": 0
 }
 
 {
@@ -704,13 +704,13 @@
         "serializedVersion": "2",
         "key0": {
             "r": 1.0,
-            "g": 0.9347095489501953,
-            "b": 0.0,
+            "g": 0.0,
+            "b": 0.029372692108154298,
             "a": 1.0
         },
         "key1": {
             "r": 1.0,
-            "g": 0.0,
+            "g": 0.5249417424201965,
             "b": 0.0,
             "a": 1.0
         },
