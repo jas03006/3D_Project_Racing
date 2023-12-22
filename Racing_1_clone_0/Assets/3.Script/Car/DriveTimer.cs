@@ -22,8 +22,8 @@ public class DriveTimer : MonoBehaviour
         }
         float t = MultiManager.instance.local_car.drive_time;
         int m =(int) (t / 60f);
-        m_text.text = $"{(int)m}";
-        s_text.text = $"{(int)(t - m*60)}";
+        m_text.text = string.Format("{0:00}", (int)m);
+        s_text.text = string.Format("{0:00.000}", (t - m*60));
         lap_text.text = $"{MultiManager.instance.local_car.lap_cnt}";
        
     }

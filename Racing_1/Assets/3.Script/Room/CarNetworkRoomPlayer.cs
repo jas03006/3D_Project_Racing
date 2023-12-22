@@ -104,6 +104,7 @@ public class CarNetworkRoomPlayer : NetworkRoomPlayer
     /// </summary>
     public override void OnStartClient() {
         set_body_material(material_index);
+        set_body_material_CMD(material_index);
     }
 
     /// <summary>

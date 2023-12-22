@@ -37,6 +37,5 @@ public class Color_Manager : MonoBehaviour
             local_car_room.set_body_material((color_index)ind);
             local_car_room.set_body_material_CMD((color_index)ind);
         }        
-    }
-
+    }    
 }

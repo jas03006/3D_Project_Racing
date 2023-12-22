@@ -53,6 +53,7 @@ public class Car : NetworkBehaviour
     [SerializeField] private Transform camera_point_tr;
     [SerializeField] private Transform camera_side_point_tr;
     [SerializeField] private Transform camera_aim_point_tr;
+    [SerializeField] private Transform camera_back_aim_point_tr;
 
     [Header("Network")]
     [SyncVar]
@@ -64,11 +65,14 @@ public class Car : NetworkBehaviour
 
     [Header("Lap_Check")]
     [SerializeField] private LapCheckLine[] lap_check_line_arr;
+    
     [SerializeField] private bool[] lap_check_bool_arr;
+
     [SyncVar]
     [SerializeField] private bool is_finish = false;
     [SyncVar]
     [SerializeField] public float drive_time= 0f;
+    [SerializeField] public float dist_from_goal= 0f;
     [SyncVar]
     [SerializeField] public int lap_cnt = 0;
 
@@ -180,6 +184,7 @@ public class Car : NetworkBehaviour
         init(false);
         brake(1000f);
         show_finish();
+        MultiManager.instance.update_rank_final(player_index, drive_time, get_name());
     }
     [ClientRpc]
     private void check_finish_RPC()
@@ -262,8 +267,6 @@ public class Car : NetworkBehaviour
                     {
                         lap_check_bool_arr[lcl_.col_cnt] = true;
                     }
-
-
                 }
                 check_finish();
                 if (is_finish)
@@ -528,8 +531,23 @@ public class Car : NetworkBehaviour
     {
         return camera_aim_point_tr;
     }
+    public Transform get_camera_back_aim_point()
+    {
+        return camera_back_aim_point_tr;
+    }
     public Transform get_camera_side_point()
     {
         return camera_side_point_tr;
+    }
+
+    public void cal_dist_from_goal() {
+        dist_from_goal += Random.Range(-1f, 1f);
+    }
+    public string get_name(int ind = -1) {
+        if (ind < 0)
+        {
+            return (player_index + 1) + "P";
+        }
+        return (ind + 1) + "P";
     }
 }
