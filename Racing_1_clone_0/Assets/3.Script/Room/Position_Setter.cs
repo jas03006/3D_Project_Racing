@@ -10,7 +10,9 @@ public class Position_Setter : MonoBehaviour
     private void Start()
     {
         //nrm = FindObjectOfType<NewNetworkRoomManager>();
-        pos_arr = GameObject.FindGameObjectsWithTag("Start_Point");
+        if (pos_arr ==null || pos_arr.Length == 0) {
+            pos_arr = GameObject.FindGameObjectsWithTag("Start_Point");
+        }        
         car_arr = new GameObject[pos_arr.Length];
         /*if (nrm != null) {
             for (int i =0; i < Mathf.Min( nrm.roomSlots.Count,pos_arr.Length); i++) {
@@ -24,7 +26,6 @@ public class Position_Setter : MonoBehaviour
             if (car_arr[i] == null) {
                 car_arr[i] = car;
                 car.transform.position = pos_arr[i].transform.position;
-                //car.transform.rotation = pos_arr[i].transform.rotation;
                 return;
             }
         }

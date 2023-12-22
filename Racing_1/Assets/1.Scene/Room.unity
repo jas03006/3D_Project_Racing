@@ -2256,7 +2256,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca60c3a22ea106d4eac46f27a4ac2a29, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pos_arr: []
+  pos_arr:
+  - {fileID: 1553543371}
+  - {fileID: 1241737028}
+  - {fileID: 252487375}
+  - {fileID: 1492608598}
+  - {fileID: 536696839}
+  - {fileID: 891081136}
   car_arr: []
 --- !u!1 &1818762262
 GameObject:
