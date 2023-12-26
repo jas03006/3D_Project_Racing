@@ -24,7 +24,6 @@ public class MultiManager : NetworkBehaviour
     [SerializeField]private Rank_Slot[] rank_slt_arr;
     public Car[] car_rank_arr { get; private set; } = null;
 
-    [SerializeField] private List<Transform> track_List;
 
     private void Awake()
     {

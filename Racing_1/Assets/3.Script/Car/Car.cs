@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 
+public enum item_index { 
+    smoke_screen = 0,
+    slicer = 1
+}
+
 public class Car : NetworkBehaviour
 {
     [SerializeField] private float motor_torque = 0f;
@@ -61,7 +66,7 @@ public class Car : NetworkBehaviour
     [SyncVar]
     public color_index material_index = 0;
 
-    [SerializeField] private MeshRenderer car_body;
+    [SerializeField] public MeshRenderer car_body;
 
     [Header("Lap_Check")]
     [SerializeField] private LapCheckLine[] lap_check_line_arr;
@@ -76,6 +81,7 @@ public class Car : NetworkBehaviour
     [SyncVar]
     [SerializeField] public int lap_cnt = 0;
 
+    private NewNetworkRoomManager net_manager;
     private void Start()
     {
         //init_lap_check(); 
@@ -93,11 +99,13 @@ public class Car : NetworkBehaviour
     {
         base.OnStartServer();
         init_lap_check();
+        net_manager = FindObjectOfType<NewNetworkRoomManager>();
     }
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();
         MultiManager.instance.resist_local_car(this);
+        net_manager = FindObjectOfType<NewNetworkRoomManager>();
     }
 
     // Update is called once per frame
@@ -112,8 +120,16 @@ public class Car : NetworkBehaviour
         //Debug.Log($"ind: {player_index}, mat: {material_index}");
         
         booster();
+        if (Input.GetKeyDown(KeyCode.V))
+        {
+            shoot_slicer_CMD();
+        }
+        
+        if (Input.GetKeyDown(KeyCode.X)) {
+            throw_smoke_screen_CMD();
+        }
         if (Input.GetKeyDown(KeyCode.R)) {
-            respawn();
+           StartCoroutine( respawn());
         }
     }
     void FixedUpdate()
@@ -168,7 +184,16 @@ public class Car : NetworkBehaviour
             }
         }
     }
-
+    public int get_check_point_dist_ind() {
+        for (int i = 0; i < lap_check_bool_arr.Length; i++)
+        {
+            if (!lap_check_bool_arr[i])
+            {
+                return lap_check_bool_arr.Length - i;
+            }
+        }
+        return 0;
+    }
     private void check_finish() {
         for (int i =0; i < lap_check_bool_arr.Length; i++) {
             if (!lap_check_bool_arr[i]) {
@@ -490,11 +515,52 @@ public class Car : NetworkBehaviour
         return result - Vector3.Project(result,transform.forward);
     }
 
-    private void respawn() {
+    private IEnumerator respawn() {
+        enable_car_body();
+        enable_car_body_CMD();
+        set_active_wheels(true);
+        set_active_wheels_CMD(true);
+
+        init();
+        yield return null;
         KeyValuePair<Vector3, Vector3> pos_for = Track_Manager.instance.get_nearest_respawn_point(transform.position);
         transform.position = pos_for.Key + Vector3.up;
         transform.forward = pos_for.Value;
-        init();
+        
+    }
+    public void set_active_wheels(bool value)
+    {
+        for (int i = 0; i < wheels.Length; i++) {
+            wheels[i].enabled = value;
+            wheel_renderer_arr[i].GetComponent<MeshCollider>().enabled = !value;
+        }
+    }
+    [Command]
+    public void set_active_wheels_CMD(bool value)
+    {
+        set_active_wheels(value);
+        set_active_wheels_RPC(value);
+    }
+    [ClientRpc]
+    private void set_active_wheels_RPC(bool value)
+    {
+        set_active_wheels(value);
+    }
+
+    private void enable_car_body() {
+        car_body.enabled = true;
+        car_body.gameObject.SetActive(true);
+    }
+    [Command]
+    private void enable_car_body_CMD()
+    {
+        enable_car_body();
+        enable_car_body_RPC();
+    }
+    [ClientRpc]
+    private void enable_car_body_RPC()
+    {
+        enable_car_body();
     }
 
     private void init(bool force_vel_zero = true) {
@@ -541,7 +607,7 @@ public class Car : NetworkBehaviour
     }
 
     public void cal_dist_from_goal() {
-        dist_from_goal += Random.Range(-1f, 1f);
+        dist_from_goal = Track_Manager.instance.get_distance_from_goal(this);
     }
     public string get_name(int ind = -1) {
         if (ind < 0)
@@ -549,5 +615,20 @@ public class Car : NetworkBehaviour
             return (player_index + 1) + "P";
         }
         return (ind + 1) + "P";
+    }
+
+    [Command]
+    private void throw_smoke_screen_CMD() {        
+        GameObject go = Instantiate(net_manager.spawnPrefabs[(int)item_index.smoke_screen], transform.position + Vector3.up*3f - transform.forward*2f, Quaternion.identity);
+        go.GetComponent<Rigidbody>().AddForce(-transform.forward*2f,ForceMode.Impulse);
+        NetworkServer.Spawn(go);
+    }
+
+    [Command]
+    private void shoot_slicer_CMD()
+    {
+        GameObject go = Instantiate(net_manager.spawnPrefabs[(int)item_index.slicer], transform.position + Vector3.up * 1f + transform.forward * 3.5f,Quaternion.LookRotation( transform.forward, transform.up));
+       // go.GetComponent<Rigidbody>().AddForce(-transform.forward * 2f, ForceMode.Impulse);
+        NetworkServer.Spawn(go);
     }
 }
