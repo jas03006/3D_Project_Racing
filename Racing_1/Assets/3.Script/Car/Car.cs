@@ -5,7 +5,9 @@ using Mirror;
 
 public enum item_index { 
     smoke_screen = 0,
-    slicer = 1
+    slicer = 1,
+    oil = 2,
+    temp = 3
 }
 
 public class Car : NetworkBehaviour
@@ -81,7 +83,7 @@ public class Car : NetworkBehaviour
     [SyncVar]
     [SerializeField] public int lap_cnt = 0;
 
-    private NewNetworkRoomManager net_manager;
+    public NewNetworkRoomManager net_manager;
     private void Start()
     {
         //init_lap_check(); 
@@ -542,7 +544,7 @@ public class Car : NetworkBehaviour
         set_active_wheels_RPC(value);
     }
     [ClientRpc]
-    private void set_active_wheels_RPC(bool value)
+    public void set_active_wheels_RPC(bool value)
     {
         set_active_wheels(value);
     }
