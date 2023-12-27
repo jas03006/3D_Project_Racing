@@ -229,5 +229,26 @@ public class MultiManager : NetworkBehaviour
         int m = (int)(drive_time / 60f);
         rank_slt_arr[final_rank_index_list.Count - 1].show_record(string.Format("{0:00}", (int)m) + " : "+ string.Format("{0:00.000}", (drive_time - m * 60f)));
     }
-   
+    [Server]
+    public int get_forntier_ind(int player_ind) {
+        for (int i =final_rank_index_list.Count+1; i < car_rank_arr.Length; i++) {
+            if (car_rank_arr[i] == null)
+            {
+                return -1;
+            }
+            if (car_rank_arr[i].player_index == player_ind) {
+                return car_rank_arr[i - 1].player_index;
+            }
+        }
+        return -1;
+    }
+    [Server]
+    public Car get_forntier(int player_ind)
+    {
+        int ind = get_forntier_ind(player_ind);
+        if (ind < 0) {
+            return null;
+        }
+        return car_list[ind];
+    }
 }

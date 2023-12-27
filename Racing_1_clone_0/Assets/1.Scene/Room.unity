@@ -1743,6 +1743,13 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 6d47c4cffaa1b824aad187c5c3e925e9, type: 2}
   - {fileID: 2100000, guid: 88e2dbfbb38145843b37f98278e2b18f, type: 2}
   - {fileID: 2100000, guid: efb5188c409a6e8409ea68739dd8d857, type: 2}
+  slicer_material_arr:
+  - {fileID: 2100000, guid: 9c62721c3ea01094283b41eed481b387, type: 2}
+  - {fileID: 2100000, guid: 9b5338dc5fd1178468895829720e0c31, type: 2}
+  - {fileID: 2100000, guid: 72a3bbcf07ecb9a4ca819a18478d01e1, type: 2}
+  - {fileID: 2100000, guid: c0939f5fd00f01a438a9be4b1d0a8855, type: 2}
+  - {fileID: 2100000, guid: 9fbac7a4d97691343ab1198c2fd27786, type: 2}
+  - {fileID: 2100000, guid: 6f996ec390fb13e4ea8b964ad53960bb, type: 2}
   local_car_room: {fileID: 0}
 --- !u!1 &1241737028
 GameObject:

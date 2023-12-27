@@ -7,6 +7,7 @@ public class Slicer_Shoot : NetworkBehaviour
 {
     private Transform slice_ob;
     public Material cross;
+    public MeshRenderer mesh_renderer;
 
     public float cut_force = 10f; //잘릴 때 우아하게 보이기 위해서 힘을 줌
 
@@ -18,6 +19,17 @@ public class Slicer_Shoot : NetworkBehaviour
         {
             StartCoroutine(death_count(30f));
         }
+    }
+
+    public void set_material(int ind_) {
+        cross = Color_Manager.instance.slicer_material_arr[ind_];
+        mesh_renderer.material = cross;        
+    }
+    [ClientRpc]
+    public void set_material_RPC(int ind_)
+    {
+        set_material(ind_);
+        Debug.Log("slice color RPC");
     }
     private IEnumerator death_count(float t)
     {

@@ -4,6 +4,18 @@ using UnityEngine;
 //using UnityEngine.UI;
 
 using Mirror;
+
+public enum item_index
+{
+    empty = -1,
+    smoke_screen = 0,
+    slicer = 1,
+    oil = 2,
+    water_bomb = 3,
+    temp = 4,
+    item_box = 5
+}
+
 public class Item_Box_Manager : NetworkBehaviour
 {
     public static Item_Box_Manager instance = null;

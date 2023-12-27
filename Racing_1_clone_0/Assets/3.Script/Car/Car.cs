@@ -3,14 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 
-public enum item_index { 
-    empty = -1,
-    smoke_screen = 0,
-    slicer = 1,
-    oil = 2,
-    temp = 3,
-    item_box=4
-}
 
 public class Car : NetworkBehaviour
 {
@@ -137,6 +129,11 @@ public class Car : NetworkBehaviour
         {
             throw_smoke_screen_CMD();
         }
+        if (Input.GetKeyDown(KeyCode.N))
+        {
+            throw_water_bomb_CMD();
+        }
+
         if (Input.GetKeyDown(KeyCode.X)) {
             use_item();
             // throw_smoke_screen_CMD();
@@ -645,8 +642,13 @@ public class Car : NetworkBehaviour
     private void shoot_slicer_CMD()
     {
         GameObject go = Instantiate(net_manager.spawnPrefabs[(int)item_index.slicer], transform.position + Vector3.up * 1f + transform.forward * 3.5f,Quaternion.LookRotation( transform.forward, transform.up));
-       // go.GetComponent<Rigidbody>().AddForce(-transform.forward * 2f, ForceMode.Impulse);
+        // go.GetComponent<Rigidbody>().AddForce(-transform.forward * 2f, ForceMode.Impulse);
+        
+        
         NetworkServer.Spawn(go);
+        Slicer_Shoot ss = go.GetComponentInChildren<Slicer_Shoot>();
+        ss.set_material((int)material_index);
+        ss.set_material_RPC((int)material_index);
     }
     [Command]
     private void throw_oil_CMD()
@@ -654,6 +656,26 @@ public class Car : NetworkBehaviour
         GameObject go = Instantiate(net_manager.spawnPrefabs[(int)item_index.oil], transform.position + Vector3.up * 1f + transform.forward * 3.5f, Quaternion.LookRotation(transform.forward, transform.up));
         // go.GetComponent<Rigidbody>().AddForce(-transform.forward * 2f, ForceMode.Impulse);
         NetworkServer.Spawn(go);
+    }
+    [Command]
+    private void throw_water_bomb_CMD()
+    {
+        GameObject go = Instantiate(net_manager.spawnPrefabs[(int)item_index.water_bomb], transform.position + Vector3.up * 1f + transform.forward * 3.5f, Quaternion.LookRotation(transform.forward, transform.up));
+        // go.GetComponent<Rigidbody>().AddForce(-transform.forward * 2f, ForceMode.Impulse);
+        NetworkServer.Spawn(go);
+        
+        Car target = MultiManager.instance.get_forntier(player_index);
+        Water_Bomb wb = go.GetComponent<Water_Bomb>();
+        if (target != null)
+        {
+            
+            wb.chase_frotier(target.transform);
+        }
+        else {
+            go.transform.position = transform.position - transform.forward * 10f;
+            wb.boom(4.3f);
+            wb.boom_RPC(4.3f);
+        }        
     }
 
     [TargetRpc]

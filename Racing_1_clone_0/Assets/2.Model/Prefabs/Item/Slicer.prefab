@@ -128,6 +128,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   cross: {fileID: 2100000, guid: 8cde70fdb91126d46a53e5095423ab81, type: 2}
+  mesh_renderer: {fileID: 7850084269019752191}
   cut_force: 500
   layer:
     serializedVersion: 2

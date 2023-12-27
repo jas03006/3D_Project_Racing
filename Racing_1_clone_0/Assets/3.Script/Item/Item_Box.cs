@@ -18,7 +18,7 @@ public class Item_Box : NetworkBehaviour
             Car car_ = other.gameObject.GetComponentInParent<Car>();
             if (car_ != null && box.activeSelf)
             {
-                car_.get_item_TRPC((item_index)Random.Range(0, 3));
+                car_.get_item_TRPC((item_index)Random.Range(0, 4));
                 StartCoroutine(hide(20f));
                 hide_RPC(20f);
             }
