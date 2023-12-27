@@ -11,11 +11,12 @@ public class Slicer_Shoot : NetworkBehaviour
     public float cut_force = 10f; //잘릴 때 우아하게 보이기 위해서 힘을 줌
 
     public LayerMask layer;
+    [SerializeField] private Transform[] pos_arr;
     private void Start()
     {
         if (isServer)
         {
-            StartCoroutine(death_count(5f));
+            StartCoroutine(death_count(30f));
         }
     }
     private IEnumerator death_count(float t)
@@ -35,12 +36,16 @@ public class Slicer_Shoot : NetworkBehaviour
         if (isServer) {
             transform.position += transform.forward * Time.deltaTime * 30f;
             RaycastHit hit;
-            if (Physics.Raycast(transform.position, transform.forward, out hit, 0.5f, layer))
-            {
-                if (hit.transform != null) {
-                    slice_object(hit.transform.gameObject, hit.point);
-                }                
+            for (int i =0; i < pos_arr.Length; i++) {
+                if (Physics.Raycast(pos_arr[i].position, transform.forward, out hit, 0.5f, layer))
+                {
+                    if (hit.point != null )
+                    {
+                        slice_object(hit.transform.gameObject, hit.point);
+                    }
+                }
             }
+            
         }
         
         
@@ -64,7 +69,7 @@ public class Slicer_Shoot : NetworkBehaviour
             return;
         }
         GameObject car_body = car_.car_body.gameObject;
-        Debug.Log($"Slice RPC! {car_body.transform.tag}");
+        //Debug.Log($"Slice RPC! {car_body.transform.tag}");
 
         SlicedHull hull = car_body.Slice(hit_position, slice_normal);
         if (hull != null)
@@ -127,7 +132,10 @@ public class Slicer_Shoot : NetworkBehaviour
         Car car_ = target.GetComponent<Car>();
 
         GameObject car_body = car_.car_body.gameObject;
-        Debug.Log($"Slice! {car_body.transform.tag}");
+        if (car_body == null || !car_body.activeSelf) {
+            return;
+        }
+       // Debug.Log($"Slice! {car_body.transform.tag}");
 
         Vector3 slice_normal = transform.GetChild(0).up;
 

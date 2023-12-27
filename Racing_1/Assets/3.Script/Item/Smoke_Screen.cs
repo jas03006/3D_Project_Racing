@@ -29,4 +29,14 @@ public class Smoke_Screen :NetworkBehaviour
         particle_system.Stop();
     }
 
+    [ClientRpc]
+    public void set_smoke_color_RPC(int ind_)
+    {
+        set_smoke_color(ind_);
+    }
+
+    public void set_smoke_color(int ind_) {
+        particle_system.GetComponent<ParticleSystemRenderer>().material = Color_Manager.instance.smoke_material_arr[ind_];
+    }
+
 }

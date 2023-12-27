@@ -11,6 +11,7 @@ TagManager:
   - Count_Down_Text
   - Car_Body
   - Booster_Platform
+  - Item_Box_Pos
   layers:
   - Default
   - TransparentFX
@@ -22,7 +23,7 @@ TagManager:
   - Minimap
   - Platform
   - Car_Body
-  - 
+  - Item_Box
   - 
   - 
   - 

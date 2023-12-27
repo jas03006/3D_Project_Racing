@@ -17,6 +17,7 @@ public class Color_Manager : MonoBehaviour
     public static Color_Manager instance = null;
     [SerializeField] public Material[] car_material_arr;
     [SerializeField] public Material[] minimap_material_arr;
+    [SerializeField] public Material[] smoke_material_arr;
 
     [SerializeField] public CarNetworkRoomPlayer local_car_room;
     private void Awake()

@@ -4,10 +4,12 @@ using UnityEngine;
 using Mirror;
 
 public enum item_index { 
+    empty = -1,
     smoke_screen = 0,
     slicer = 1,
     oil = 2,
-    temp = 3
+    temp = 3,
+    item_box=4
 }
 
 public class Car : NetworkBehaviour
@@ -84,6 +86,7 @@ public class Car : NetworkBehaviour
     [SerializeField] public int lap_cnt = 0;
 
     public NewNetworkRoomManager net_manager;
+    private Item_Slot item_slot_UI;
     private void Start()
     {
         //init_lap_check(); 
@@ -96,6 +99,10 @@ public class Car : NetworkBehaviour
         ask_player_index();
         Minimap_Manager.instance.regist_car(this);
         init_car_model();
+
+        if (isLocalPlayer) {
+            item_slot_UI = FindObjectOfType<Item_Slot>();
+        }
     }
     public override void OnStartServer()
     {
@@ -126,9 +133,13 @@ public class Car : NetworkBehaviour
         {
             shoot_slicer_CMD();
         }
-        
-        if (Input.GetKeyDown(KeyCode.X)) {
+        if (Input.GetKeyDown(KeyCode.B))
+        {
             throw_smoke_screen_CMD();
+        }
+        if (Input.GetKeyDown(KeyCode.X)) {
+            use_item();
+            // throw_smoke_screen_CMD();
         }
         if (Input.GetKeyDown(KeyCode.R)) {
            StartCoroutine( respawn());
@@ -624,7 +635,11 @@ public class Car : NetworkBehaviour
         GameObject go = Instantiate(net_manager.spawnPrefabs[(int)item_index.smoke_screen], transform.position + Vector3.up*3f - transform.forward*2f, Quaternion.identity);
         go.GetComponent<Rigidbody>().AddForce(-transform.forward*2f,ForceMode.Impulse);
         NetworkServer.Spawn(go);
+        Smoke_Screen ss = go.GetComponent<Smoke_Screen>();
+        ss.set_smoke_color((int)material_index);
+        ss.set_smoke_color_RPC((int)material_index);
     }
+    
 
     [Command]
     private void shoot_slicer_CMD()
@@ -632,5 +647,38 @@ public class Car : NetworkBehaviour
         GameObject go = Instantiate(net_manager.spawnPrefabs[(int)item_index.slicer], transform.position + Vector3.up * 1f + transform.forward * 3.5f,Quaternion.LookRotation( transform.forward, transform.up));
        // go.GetComponent<Rigidbody>().AddForce(-transform.forward * 2f, ForceMode.Impulse);
         NetworkServer.Spawn(go);
+    }
+    [Command]
+    private void throw_oil_CMD()
+    {
+        GameObject go = Instantiate(net_manager.spawnPrefabs[(int)item_index.oil], transform.position + Vector3.up * 1f + transform.forward * 3.5f, Quaternion.LookRotation(transform.forward, transform.up));
+        // go.GetComponent<Rigidbody>().AddForce(-transform.forward * 2f, ForceMode.Impulse);
+        NetworkServer.Spawn(go);
+    }
+
+    [TargetRpc]
+    public void get_item_TRPC(item_index ind_) {
+        Debug.Log($"{player_index}: {ind_}");
+        if (item_slot_UI.index == item_index.empty) {
+            item_slot_UI.set_img(ind_);
+        }
+    }
+
+    public void use_item() {
+        item_index ind_ = item_slot_UI.use_item();
+        switch (ind_)
+        {
+            case item_index.smoke_screen:
+                throw_smoke_screen_CMD();
+                break;
+            case item_index.slicer:
+                shoot_slicer_CMD();
+                break;
+            case item_index.oil:
+                throw_oil_CMD();
+                break;            
+            default:
+                break;
+        }
     }
 }
