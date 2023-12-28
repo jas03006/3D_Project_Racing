@@ -224,6 +224,9 @@ public class MultiManager : NetworkBehaviour
     }
 
     public void update_rank_final(int ind,  float drive_time, string name) {
+        if (final_rank_index_list.Contains(ind)) {
+            return;
+        }
         final_rank_index_list.Add(ind);
         rank_slt_arr[final_rank_index_list.Count - 1].update_name(name);
         int m = (int)(drive_time / 60f);

@@ -65,9 +65,8 @@ public class Car : NetworkBehaviour
     [SerializeField] public MeshRenderer car_body;
 
     [Header("Lap_Check")]
-    [SerializeField] private LapCheckLine[] lap_check_line_arr;
-    
-    [SerializeField] private bool[] lap_check_bool_arr;
+    [SerializeField] private LapCheckLine[] lap_check_line_arr;   
+    [SerializeField] public bool[] lap_check_bool_arr;
 
     [SyncVar]
     [SerializeField] private bool is_finish = false;
@@ -183,9 +182,13 @@ public class Car : NetworkBehaviour
     private void init_lap_check() {        
         is_finish = false;
         LapCheckLine[] lcl = GameObject.FindObjectsOfType<LapCheckLine>();
-        lap_check_bool_arr = new bool[lcl.Length+1];
-        lap_check_line_arr = new LapCheckLine[lcl.Length];
-        for (int i =0; i < lcl.Length; i++) {            
+        lap_check_bool_arr = new bool[lcl.Length];
+        lap_check_line_arr = new LapCheckLine[lcl.Length-1];
+        for (int i =0; i < lcl.Length; i++) {
+            if (lcl[i].col_cnt == -1)
+            {
+                continue;
+            }
             LapCheckLine lcl_ = lcl[i].GetComponent<LapCheckLine>();
             lap_check_line_arr[lcl_.col_cnt] = lcl_;
             lap_check_bool_arr[i] = false;
@@ -261,7 +264,44 @@ public class Car : NetworkBehaviour
     {
         car.AddForce(impulse, ForceMode.Impulse);
     }
-
+    private void OnTriggerStay(Collider other)
+    {
+        if (isServer)
+        {
+            if (other.gameObject.layer.Equals(LayerMask.NameToLayer("CheckBox")))
+            {
+                LapCheckLine lcl_ = other.GetComponent<LapCheckLine>();
+                if (lcl_.col_cnt == -1)
+                {
+                    for (int i = 0; i < lap_check_bool_arr.Length - 1; i++)
+                    {
+                        if (!lap_check_bool_arr[i])
+                        {
+                            lap_check_bool_arr[0] = false;
+                            return;
+                        }
+                    }
+                    return;
+                }
+                return;
+            }
+        }
+    }
+    private void OnTriggerExit(Collider other)
+    {
+        if (isServer)
+        {
+            if (other.gameObject.layer.Equals(LayerMask.NameToLayer("CheckBox")))
+            {
+                LapCheckLine lcl_ = other.GetComponent<LapCheckLine>();
+                if (lcl_.col_cnt == 0)
+                {
+                    lap_check_bool_arr[0] = true;
+                }
+                return;
+            }
+        }
+    }
     private void OnTriggerEnter(Collider other)
     {
         if (isClient)
@@ -279,8 +319,20 @@ public class Car : NetworkBehaviour
         if (isServer)
         {
             if (other.gameObject.layer.Equals(LayerMask.NameToLayer("CheckBox")))
-            {
+            {                
                 LapCheckLine lcl_ = other.GetComponent<LapCheckLine>();
+                if (lcl_.col_cnt == -1)
+                {
+                    for (int i = 0; i < lap_check_bool_arr.Length - 1; i++)
+                    {
+                        if (!lap_check_bool_arr[i])
+                        {
+                            lap_check_bool_arr[0] = false;
+                            return;
+                        }
+                    }
+                    return;
+                }
                 if (lcl_.col_cnt == 0 && lap_check_bool_arr[0])
                 {
                     for (int i = 0; i < lap_check_bool_arr.Length - 1; i++)
@@ -653,37 +705,35 @@ public class Car : NetworkBehaviour
     [Command]
     private void throw_oil_CMD()
     {
-        GameObject go = Instantiate(net_manager.spawnPrefabs[(int)item_index.oil], transform.position + Vector3.up * 1f + transform.forward * 3.5f, Quaternion.LookRotation(transform.forward, transform.up));
+        GameObject go = Instantiate(net_manager.spawnPrefabs[(int)item_index.oil], transform.position + Vector3.up * 1f - transform.forward * 3.5f, Quaternion.LookRotation(transform.forward, transform.up));
         // go.GetComponent<Rigidbody>().AddForce(-transform.forward * 2f, ForceMode.Impulse);
         NetworkServer.Spawn(go);
     }
-    [Command]
+    [Command(requiresAuthority = false)]
     private void throw_water_bomb_CMD()
     {
         GameObject go = Instantiate(net_manager.spawnPrefabs[(int)item_index.water_bomb], transform.position + Vector3.up * 1f + transform.forward * 3.5f, Quaternion.LookRotation(transform.forward, transform.up));
         // go.GetComponent<Rigidbody>().AddForce(-transform.forward * 2f, ForceMode.Impulse);
         NetworkServer.Spawn(go);
-        
+
+        //Debug.Log(player_index);
         Car target = MultiManager.instance.get_forntier(player_index);
         Water_Bomb wb = go.GetComponent<Water_Bomb>();
         if (target != null)
         {
-            
             wb.chase_frotier(target.transform);
         }
         else {
-            go.transform.position = transform.position - transform.forward * 10f;
-            wb.boom(4.3f);
-            wb.boom_RPC(4.3f);
+            wb.target(transform.position - transform.forward * 40f);
         }        
     }
 
     [TargetRpc]
     public void get_item_TRPC(item_index ind_) {
-        Debug.Log($"{player_index}: {ind_}");
-        if (item_slot_UI.index == item_index.empty) {
+       // Debug.Log($"{player_index}: {ind_}");
+        //if (item_slot_UI.index == item_index.empty) {
             item_slot_UI.set_img(ind_);
-        }
+        //}
     }
 
     public void use_item() {
@@ -698,7 +748,10 @@ public class Car : NetworkBehaviour
                 break;
             case item_index.oil:
                 throw_oil_CMD();
-                break;            
+                break;
+            case item_index.water_bomb:
+                throw_water_bomb_CMD();
+                break;
             default:
                 break;
         }

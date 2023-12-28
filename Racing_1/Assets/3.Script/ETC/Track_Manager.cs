@@ -82,10 +82,20 @@ public class Track_Manager : MonoBehaviour
                 result_tr = respawn_arr[i].transform;
                 result_ind = i;
             }
+        }               
+        
+        if (result_ind == respawn_arr.Length-1 && car_.lap_check_bool_arr[0] == true && car_.lap_check_bool_arr[1] == false)
+        {
+            result_ind = 0;
         }
-        Vector3 dir = respawn_arr[(result_ind + 1)%respawn_arr.Length].transform.position - result_tr.position;
+
+        Vector3 dir = respawn_arr[(result_ind + 1) % respawn_arr.Length].transform.position - result_tr.position;
         float result = (respawn_arr.Length - result_ind) * 100f + Mathf.Sign(Vector3.Dot(result_tr.position - car_.transform.position, dir)) * (result_tr.position - car_.transform.position).magnitude;
         
-        return result + car_.get_check_point_dist_ind()*10000f;
+        if (car_.lap_check_bool_arr[0] == false) {
+            result += 20000f;            
+        }
+
+        return result;// + car_.get_check_point_dist_ind()*10000f;
     }
 }
