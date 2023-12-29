@@ -30,6 +30,9 @@ public class Car : NetworkBehaviour
     private bool is_boosting = false;
     private Coroutine boost_co = null;
 
+    [SyncVar]
+    private bool is_slip = false;
+
     [SerializeField] WheelCollider LFW;
     [SerializeField] GameObject LFW_Mesh;
 
@@ -132,6 +135,10 @@ public class Car : NetworkBehaviour
         {
             throw_water_bomb_CMD();
         }
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            throw_oil_CMD();
+        }
 
         if (Input.GetKeyDown(KeyCode.X)) {
             use_item();
@@ -154,12 +161,30 @@ public class Car : NetworkBehaviour
     }*/
     private void control_car()
     {
+        for (int i = 0; i < wheels.Length; i++)
+        {
+            set_forward_friction(wheels[i], original_front_wheel_friction_coeff);
+            set_side_friction(wheels[i], original_back_wheel_friction_coeff);
+        }
         accel();
         brake();
         drift();
         steer();
         draw_skid();
         rotate_wheel();
+        slip();
+    }
+    private void slip() {
+        Debug.Log(is_slip);
+        if (is_slip)
+        {
+            for (int i = 0; i < wheels.Length; i++)
+            {
+                set_forward_friction(wheels[i], 0.1f);
+                set_side_friction(wheels[i], 0f);
+            }
+            is_slip = false;
+        }
     }
 
     private void draw_speed_particle() {
@@ -248,7 +273,9 @@ public class Car : NetworkBehaviour
                 send_collision_CMD(collision.impulse);
             }            
         }
+        
     }
+
     [Command(requiresAuthority =false)]
     private void send_collision_CMD(Vector3 impulse) {
         if (isLocalPlayer)
@@ -264,10 +291,20 @@ public class Car : NetworkBehaviour
     {
         car.AddForce(impulse, ForceMode.Impulse);
     }
+    
+
     private void OnTriggerStay(Collider other)
     {
         if (isServer)
         {
+            if (!is_slip)
+            {
+                if (other.gameObject.layer.Equals(LayerMask.NameToLayer("Oil")))
+                {
+                    is_slip = true;
+                }
+            }
+
             if (other.gameObject.layer.Equals(LayerMask.NameToLayer("CheckBox")))
             {
                 LapCheckLine lcl_ = other.GetComponent<LapCheckLine>();
@@ -318,6 +355,13 @@ public class Car : NetworkBehaviour
         }
         if (isServer)
         {
+            if ( !is_slip)
+            {
+                if (other.gameObject.layer.Equals(LayerMask.NameToLayer("Oil")))
+                {
+                    is_slip = true;
+                }
+            }
             if (other.gameObject.layer.Equals(LayerMask.NameToLayer("CheckBox")))
             {                
                 LapCheckLine lcl_ = other.GetComponent<LapCheckLine>();
@@ -705,8 +749,9 @@ public class Car : NetworkBehaviour
     [Command]
     private void throw_oil_CMD()
     {
-        GameObject go = Instantiate(net_manager.spawnPrefabs[(int)item_index.oil], transform.position + Vector3.up * 1f - transform.forward * 3.5f, Quaternion.LookRotation(transform.forward, transform.up));
-        // go.GetComponent<Rigidbody>().AddForce(-transform.forward * 2f, ForceMode.Impulse);
+        GameObject go = Instantiate(net_manager.spawnPrefabs[(int)item_index.oil], transform.position + Vector3.up * 1f - transform.forward * 3.5f + transform.right*0.3f, Quaternion.LookRotation(transform.forward, transform.up));
+        NetworkServer.Spawn(go);
+        go = Instantiate(net_manager.spawnPrefabs[(int)item_index.oil], transform.position + Vector3.up * 1f - transform.forward * 3.5f - transform.right * 0.3f, Quaternion.LookRotation(transform.forward, transform.up));
         NetworkServer.Spawn(go);
     }
     [Command(requiresAuthority = false)]
