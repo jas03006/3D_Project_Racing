@@ -164,7 +164,13 @@ public class Car : NetworkBehaviour
         for (int i = 0; i < wheels.Length; i++)
         {
             set_forward_friction(wheels[i], original_front_wheel_friction_coeff);
-            set_side_friction(wheels[i], original_back_wheel_friction_coeff);
+            if (i < 2)
+            {
+                set_side_friction(wheels[i], original_front_wheel_friction_coeff);
+            }
+            else {
+                set_side_friction(wheels[i], original_back_wheel_friction_coeff);
+            }            
         }
         accel();
         brake();
@@ -175,7 +181,7 @@ public class Car : NetworkBehaviour
         slip();
     }
     private void slip() {
-        Debug.Log(is_slip);
+        //Debug.Log(is_slip);
         if (is_slip)
         {
             for (int i = 0; i < wheels.Length; i++)
