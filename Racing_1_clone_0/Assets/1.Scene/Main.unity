@@ -679,6 +679,7 @@ MonoBehaviour:
   start_cam: {fileID: 5410666794759120516}
   count_down_text: {fileID: 0}
   is_start: 0
+  is_finish: 0
   rank_slt_arr:
   - {fileID: 1487304122}
   - {fileID: 423978164}

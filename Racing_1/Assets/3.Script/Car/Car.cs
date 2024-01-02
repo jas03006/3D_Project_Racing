@@ -110,6 +110,7 @@ public class Car : NetworkBehaviour
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();
+        lap_cnt = 0;
         enable_wheel();
         MultiManager.instance.resist_local_car(this);
         net_manager = FindObjectOfType<NewNetworkRoomManager>();
