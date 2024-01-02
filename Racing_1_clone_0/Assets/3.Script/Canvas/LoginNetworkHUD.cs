@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Mirror;
 using UnityEngine.SceneManagement;
 
@@ -9,9 +10,14 @@ using UnityEngine.SceneManagement;
 [RequireComponent(typeof(NetworkManager))]
 public class LoginNetworkHUD : MonoBehaviour
 {
+    [SerializeField] private Text Log;
+    public InputField id_i;
+    public InputField pwd_i;
 
     NetworkRoomManager manager;
     SceneManager scene_manager;
+    [SerializeField] private SQL_Manager sql_manager;
+
     public int offsetX;
     public int offsetY;
 
@@ -26,10 +32,14 @@ public class LoginNetworkHUD : MonoBehaviour
     {
 
         if (!is_login) {
-            GUILayout.BeginArea(new Rect(10 + offsetX, 40 + offsetY, 250, 9999));
+            GUILayout.BeginArea(new Rect( offsetX, 40 + offsetY, 250, 9999));
             if (GUILayout.Button("Login"))
             {
-                is_login = true;
+                if (login_btn()) {
+                    sql_manager.show_room();
+                    is_login = true;
+                }               
+                
             }
             GUILayout.EndArea();
             return;
@@ -37,7 +47,7 @@ public class LoginNetworkHUD : MonoBehaviour
        
         if (!NetworkClient.isConnected && !NetworkServer.active)
         {
-            GUILayout.BeginArea(new Rect(10 + offsetX, 40 + offsetY, 250, 9999));
+            GUILayout.BeginArea(new Rect(offsetX, 40 + offsetY, 250, 9999));
             
                 StartButtons();
            
@@ -81,7 +91,11 @@ public class LoginNetworkHUD : MonoBehaviour
             {
                 if (GUILayout.Button("Host (Server + Client)"))
                 {
+                    sql_manager.create_room();
                     manager.StartHost();
+                    kcp2k.KcpTransport kcp = (manager.transport as kcp2k.KcpTransport);
+                    Debug.Log("IP: "+manager.networkAddress);
+                    Debug.Log("port: "+kcp.Port);
                 }
             }
 
@@ -89,10 +103,14 @@ public class LoginNetworkHUD : MonoBehaviour
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Client"))
             {
+              
+                kcp2k.KcpTransport kcp = (manager.transport as kcp2k.KcpTransport);
+                kcp.Port = 6666;
                 manager.StartClient();
             }
             // This updates networkAddress every frame from the TextField
             manager.networkAddress = GUILayout.TextField(manager.networkAddress);
+            
             GUILayout.EndHorizontal();
 
             // Server Only
@@ -170,6 +188,32 @@ public class LoginNetworkHUD : MonoBehaviour
             {
                 manager.StopServer();
             }
+        }
+    }
+    
+
+    public bool login_btn()
+    {
+        if (id_i.text.Equals(string.Empty) || pwd_i.text.Equals(string.Empty))
+        {
+            Log.text = "아이디 비밀번호를 입력하세요.";
+            return false;
+        }
+
+        if (SQL_Manager.instance.login(id_i.text, pwd_i.text))
+        {
+            User_Info info = SQL_Manager.instance.info;
+            Debug.Log(info.User_Name + " | " + info.User_Password);
+            id_i.gameObject.SetActive(false);
+            pwd_i.gameObject.SetActive(false);
+            Log.gameObject.SetActive(false);
+            //gameObject.SetActive(false);
+            return true;
+        }
+        else
+        {
+            Log.text = "아이디 비밀번호를 확인해주세요.";
+            return false;
         }
     }
 }

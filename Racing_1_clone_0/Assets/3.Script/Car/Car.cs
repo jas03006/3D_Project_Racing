@@ -786,9 +786,11 @@ public class Car : NetworkBehaviour
     [Command]
     private void throw_oil_CMD()
     {
-        GameObject go = Instantiate(net_manager.spawnPrefabs[(int)item_index.oil], transform.position + Vector3.up * 1f - transform.forward * 3.5f + transform.right*0.5f, Quaternion.LookRotation(transform.forward, transform.up));
+        GameObject go = Instantiate(net_manager.spawnPrefabs[(int)item_index.oil], transform.position + Vector3.up * 1f - transform.forward * 3f + transform.right*2.2f, Quaternion.LookRotation(transform.forward, transform.up));
+        go.transform.Rotate(0f,30f,0f);
         NetworkServer.Spawn(go);
-        go = Instantiate(net_manager.spawnPrefabs[(int)item_index.oil], transform.position + Vector3.up * 1f - transform.forward * 3.5f - transform.right * 0.5f, Quaternion.LookRotation(transform.forward, transform.up));
+        go = Instantiate(net_manager.spawnPrefabs[(int)item_index.oil], transform.position + Vector3.up * 1f - transform.forward * 3f - transform.right * 2.2f, Quaternion.LookRotation(transform.forward, transform.up));
+        go.transform.Rotate(0f, 30f, 0f);
         NetworkServer.Spawn(go);
     }
     [Command(requiresAuthority = false)]
