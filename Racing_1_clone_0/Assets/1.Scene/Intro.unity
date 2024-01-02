@@ -251,7 +251,7 @@ GameObject:
   - component: {fileID: 60385593}
   - component: {fileID: 60385592}
   - component: {fileID: 60385594}
-  - component: {fileID: 60385595}
+  - component: {fileID: 60385596}
   m_Layer: 0
   m_Name: NetWorkRoomManager
   m_TagString: Untagged
@@ -316,6 +316,8 @@ MonoBehaviour:
   _allPlayersReady: 0
   roomSlots: []
   clientIndex: 0
+  button_background_texture: {fileID: 2800000, guid: 4b66f21097323d44ab40669b2fb9c53d, type: 3}
+  button_background_texture_hover: {fileID: 2800000, guid: d09270a5be941b14e8cd76b7d0347e0b, type: 3}
 --- !u!4 &60385593
 Transform:
   m_ObjectHideFlags: 0
@@ -359,7 +361,7 @@ MonoBehaviour:
   debugLog: 0
   statisticsGUI: 0
   statisticsLog: 0
---- !u!114 &60385595
+--- !u!114 &60385596
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -368,8 +370,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 60385591}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6442dc8070ceb41f094e44de0bf87274, type: 3}
+  m_Script: {fileID: 11500000, guid: 311c99e05b16db74ca8b100bb51c1228, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  offsetX: 0
-  offsetY: 0
+  offsetX: 835
+  offsetY: 470

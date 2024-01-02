@@ -19,6 +19,11 @@ using Mirror;
 /// </summary>
 public class NewNetworkRoomManager : NetworkRoomManager
 {
+    private GUILayoutOption[] GUI_opitions;
+    private GUIStyle GUI_style;
+    [SerializeField] private Texture2D button_background_texture;
+    [SerializeField] private Texture2D button_background_texture_hover;
+
     #region Server Callbacks
 
     /// <summary>
@@ -186,7 +191,32 @@ public class NewNetworkRoomManager : NetworkRoomManager
 
     public override void OnGUI()
     {
-        base.OnGUI();
+        if (!showRoomGUI ||( MultiManager.instance != null && !MultiManager.instance.is_finish))
+            return;
+        if (GUI_opitions == null) {
+            GUI_opitions = new GUILayoutOption[2];
+            GUI_opitions[0] = GUILayout.Width(300);
+            GUI_opitions[1] = GUILayout.Height(100);
+        }
+        if (GUI_style == null) {
+            GUI_style = new GUIStyle();
+            GUI_style.fontSize = 50;
+            GUI_style.fontStyle = FontStyle.Bold;
+            GUI_style.alignment = TextAnchor.MiddleCenter;
+            GUI_style.normal.background = button_background_texture;
+            GUI_style.hover.background = button_background_texture_hover;
+        }
+
+        if (NetworkServer.active && Utils.IsSceneActive(GameplayScene))
+        {
+            GUILayout.BeginArea(new Rect(Screen.width/2f - 150f, Screen.height - 150f, 300f, 100f));
+            if (GUILayout.Button("Restart", GUI_style, GUI_opitions))
+                ServerChangeScene(RoomScene);
+            GUILayout.EndArea();
+        }
+
+        if (Utils.IsSceneActive(RoomScene))
+            GUI.Box(new Rect(10f, 180f, 520f, 150f), "PLAYERS");
     }
 
     #endregion

@@ -15,6 +15,9 @@ public class MultiManager : NetworkBehaviour
     public int current_player_cnt { get; private set; } = 0;
     [SyncVar]
     public bool is_start;
+    [SyncVar]
+    public bool is_finish = false;
+
     private int count = 3;
     
     public float timer { get; private set; } = 0f;
@@ -175,6 +178,10 @@ public class MultiManager : NetworkBehaviour
       
     }
     public void update_rank() {
+        if (final_rank_index_list.Count == car_list.Count) {
+            is_finish = true;
+            return;
+        }
         for (int i =0; i < car_list.Count; i++) {
             if (final_rank_index_list.Contains(i)) {
                 continue;
@@ -253,4 +260,5 @@ public class MultiManager : NetworkBehaviour
         }
         return car_list[ind];
     }
+
 }
