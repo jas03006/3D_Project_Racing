@@ -20,7 +20,7 @@ public class Color_Manager : MonoBehaviour
     [SerializeField] public Material[] smoke_material_arr;
     [SerializeField] public Material[] slicer_material_arr;
 
-    [SerializeField] public CarNetworkRoomPlayer local_car_room;
+    public CarNetworkRoomPlayer local_car_room = null;
     private void Awake()
     {
         if (instance == null)
@@ -29,7 +29,13 @@ public class Color_Manager : MonoBehaviour
             DontDestroyOnLoad(this.gameObject);
         }
         else {
-            Destroy(this.gameObject);
+            if (local_car_room == null) {
+                local_car_room = instance.local_car_room;
+            }            
+            Destroy(instance.gameObject);
+            instance = this;
+            DontDestroyOnLoad(this.gameObject);
+            //Destroy(this.gameObject);
             return;
         }
     }

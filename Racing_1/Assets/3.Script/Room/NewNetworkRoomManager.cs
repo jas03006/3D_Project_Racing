@@ -111,7 +111,8 @@ public class NewNetworkRoomManager : NetworkRoomManager
         car.material_index = car_room.material_index;
         car_room.on_game_scene_load_RPC();
         //car_room.deactive_RPC();
-        roomPlayer.SetActive(false);            
+        NetworkServer.Destroy(roomPlayer);
+        //roomPlayer.SetActive(false);            
         
         return base.OnRoomServerSceneLoadedForPlayer(conn, roomPlayer, gamePlayer);
     }
@@ -189,4 +190,6 @@ public class NewNetworkRoomManager : NetworkRoomManager
     }
 
     #endregion
+
+
 }

@@ -6,6 +6,7 @@ public class Water_Particle : NetworkBehaviour
 {
     [SerializeField] Rigidbody rigid;
     private Collider[] col_arr;
+    //private RaycastHit[] hit_arr;
     private Vector3 dis;
     private Vector3 velocity;
     private Vector3 interaction;
@@ -15,11 +16,16 @@ public class Water_Particle : NetworkBehaviour
     private float sqr_distance_threshold;
     private float attraction_coeff = 4.0f;
     private float repulsion_coeff = 0.025f;
+
+    private int oil_layer_mask;
+    private int default_layer_mask;
     // Start is called before the first frame update
     void Start()
     {
         if (isServer)
         {
+            oil_layer_mask = LayerMask.GetMask("Oil");
+            default_layer_mask = LayerMask.GetMask("Default");
             interaction = Vector3.zero;
             sqr_distance_threshold = check_distance * check_distance;
         }
@@ -43,7 +49,7 @@ public class Water_Particle : NetworkBehaviour
             //}
 
             transform.up = Vector3.up;
-            velocity -= 0.3f * velocity * Time.fixedDeltaTime; // 공기저항 및 마찰력
+            velocity -= 0.9f * velocity * Time.fixedDeltaTime; // 공기저항 및 마찰력
         }       
     }
     private IEnumerator death_count(float t)
@@ -56,7 +62,8 @@ public class Water_Particle : NetworkBehaviour
     private void cal_interaction() {
         interaction = Vector3.zero;
         //col_arr = Physics.OverlapSphere(transform.position, 0.08f, LayerMask.GetMask("Oil"));
-        col_arr = Physics.OverlapBox(transform.position,Vector3.right* 0.4f, Quaternion.identity,LayerMask.GetMask("Oil"));
+        col_arr = Physics.OverlapBox(transform.position,Vector3.right* 0.4f, Quaternion.identity, oil_layer_mask);
+        //hit_arr = Physics.BoxCastAll(transform.position,Vector3.right* 0.4f, Vector3.down, Quaternion.identity,0.2f, oil_layer_mask);
         
         for (int i = 0; i < col_arr.Length; i++) {
             dis = col_arr[i].transform.position - transform.position;
@@ -78,7 +85,7 @@ public class Water_Particle : NetworkBehaviour
 
     private bool cal_gounded(float dt) {
 
-        if (velocity.y - 9.8f*Time.deltaTime <= 0.1f && Physics.Raycast(transform.position, Vector3.down, 0.05f + Mathf.Abs( velocity.y - 9.8f * Time.deltaTime) *Time.fixedDeltaTime, LayerMask.GetMask("Default"))) {
+        if (velocity.y - 9.8f*Time.fixedDeltaTime <= 0.1f && Physics.Raycast(transform.position, Vector3.down, 0.05f + Mathf.Abs( velocity.y - 9.8f * Time.fixedDeltaTime) *Time.fixedDeltaTime, default_layer_mask)) {
             velocity -= 0.95f * velocity * dt;
             velocity.y = Mathf.Max(0f, velocity.y);
             return true;

@@ -140,7 +140,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3351744315621728317}
   serializedVersion: 2
-  m_Mass: 50
+  m_Mass: 1
   m_Drag: 0
   m_AngularDrag: 0.01
   m_UseGravity: 1
@@ -232,6 +232,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70be55313c1e3394f9ecf882ea993c1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
   oil_particle: {fileID: 7482406412094112832, guid: 88158570ebd0e564eb4427cc9d34a4d6, type: 3}
   emit_forward: {fileID: 6797246026018980572}
 --- !u!1 &6536300760252655599
@@ -278,6 +281,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70be55313c1e3394f9ecf882ea993c1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
   oil_particle: {fileID: 7482406412094112832, guid: 88158570ebd0e564eb4427cc9d34a4d6, type: 3}
   emit_forward: {fileID: 4433821781204127814}
 --- !u!1 &7993650896375850308

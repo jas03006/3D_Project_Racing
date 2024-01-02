@@ -10,6 +10,8 @@ public class Car : NetworkBehaviour
     [SerializeField] private float motor_torque_force = 800f;
 
     [SerializeField] private float booster_coeff = 1f;
+    [SerializeField] private float booster_force = 6000f;
+
 
     [SerializeField] private float brake_torque = 0f;
     [SerializeField] private float brake_torque_force = 800f;
@@ -101,12 +103,14 @@ public class Car : NetworkBehaviour
     public override void OnStartServer()
     {
         base.OnStartServer();
+        
         init_lap_check();
         net_manager = FindObjectOfType<NewNetworkRoomManager>();
     }
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();
+        enable_wheel();
         MultiManager.instance.resist_local_car(this);
         net_manager = FindObjectOfType<NewNetworkRoomManager>();
     }
@@ -161,7 +165,7 @@ public class Car : NetworkBehaviour
     }*/
     private void control_car()
     {
-        for (int i = 0; i < wheels.Length; i++)
+        /*for (int i = 0; i < wheels.Length; i++)
         {
             set_forward_friction(wheels[i], original_front_wheel_friction_coeff);
             if (i < 2)
@@ -171,26 +175,44 @@ public class Car : NetworkBehaviour
             else {
                 set_side_friction(wheels[i], original_back_wheel_friction_coeff);
             }            
-        }
+        }*/
         accel();
         brake();
         drift();
-        steer();
-        draw_skid();
+        steer();        
         rotate_wheel();
         slip();
+        draw_skid();
+    }
+    private void enable_wheel() {
+        wheels[0] = LFW;
+        wheels[1] = RFW;
+        wheels[2] = LBW;
+        wheels[3] = RBW;
+        for (int i =0; i< wheels.Length; i++) {
+            wheels[i].GetComponent<Wheel>().enabled = true;
+        }
+    }
+    private void disable_wheel()
+    {
+        for (int i = 0; i < wheels.Length; i++)
+        {
+            wheels[i].GetComponent<Wheel>().enabled = false;
+        }
     }
     private void slip() {
         //Debug.Log(is_slip);
-        if (is_slip)
-        {
+        //if (is_slip)
+        //{
             for (int i = 0; i < wheels.Length; i++)
             {
-                set_forward_friction(wheels[i], 0.1f);
-                set_side_friction(wheels[i], 0f);
+                if (wheels[i].GetComponent<Wheel>().is_slip) {
+                    set_forward_friction(wheels[i], 0.1f);
+                    set_side_friction(wheels[i], 0f);
+                }                
             }
-            is_slip = false;
-        }
+        //    is_slip = false;
+        //}
     }
 
     private void draw_speed_particle() {
@@ -303,13 +325,13 @@ public class Car : NetworkBehaviour
     {
         if (isServer)
         {
-            if (!is_slip)
+           /* if (!is_slip)
             {
                 if (other.gameObject.layer.Equals(LayerMask.NameToLayer("Oil")))
                 {
                     is_slip = true;
                 }
-            }
+            }*/
 
             if (other.gameObject.layer.Equals(LayerMask.NameToLayer("CheckBox")))
             {
@@ -361,13 +383,13 @@ public class Car : NetworkBehaviour
         }
         if (isServer)
         {
-            if ( !is_slip)
+            /*if ( !is_slip)
             {
                 if (other.gameObject.layer.Equals(LayerMask.NameToLayer("Oil")))
                 {
                     is_slip = true;
                 }
-            }
+            }*/
             if (other.gameObject.layer.Equals(LayerMask.NameToLayer("CheckBox")))
             {                
                 LapCheckLine lcl_ = other.GetComponent<LapCheckLine>();
@@ -445,7 +467,7 @@ public class Car : NetworkBehaviour
         set_is_boost_CMD(is_boosting);
 
         set_rigid_friction(drift_rigid_friction);
-        car.AddForce(car.transform.forward * 3000f, ForceMode.Impulse);
+        car.AddForce(car.transform.forward * booster_force, ForceMode.Impulse);
         booster_coeff = 5f;
         //booster_particle_play();
         yield return new WaitForSeconds(5f);
@@ -533,7 +555,8 @@ public class Car : NetworkBehaviour
             //Booster_Slider.instance.get_gage(Time.fixedDeltaTime * car.velocity.magnitude);
             set_rigid_friction(drift_rigid_friction);
             set_forward_friction(LFW, drift_front_wheel_friction_coeff);
-            set_forward_friction(RFW, drift_front_wheel_friction_coeff);
+            set_forward_friction(RFW, drift_front_wheel_friction_coeff);            
+
             set_side_friction(LBW, drift_back_wheel_friction_coeff);
             set_side_friction(RBW, drift_back_wheel_friction_coeff);
         }
@@ -545,6 +568,12 @@ public class Car : NetworkBehaviour
             }
             set_forward_friction(LFW, original_front_wheel_friction_coeff);
             set_forward_friction(RFW, original_front_wheel_friction_coeff);
+            set_forward_friction(LBW, original_front_wheel_friction_coeff);
+            set_forward_friction(RBW, original_front_wheel_friction_coeff);
+
+
+            set_side_friction(LFW, original_front_wheel_friction_coeff);
+            set_side_friction(RFW, original_front_wheel_friction_coeff);
             set_side_friction(LBW, original_back_wheel_friction_coeff);
             set_side_friction(RBW, original_back_wheel_friction_coeff);
         }
@@ -576,7 +605,7 @@ public class Car : NetworkBehaviour
         if (side_velocity_sqrmag > 1.7f)
         {
             if (skid_mark_on(side_velocity_sqrmag)) {
-                Booster_Slider.instance.get_gage(Time.fixedDeltaTime * Mathf.Log(side_velocity_sqrmag, 1.5f) );
+               // Booster_Slider.instance.get_gage(Time.fixedDeltaTime * Mathf.Log(side_velocity_sqrmag, 1.5f) );
             }            
         }
         else {
@@ -591,12 +620,13 @@ public class Car : NetworkBehaviour
         bool is_on = false;
         for (int i = 2; i < trail_renderer_arr.Length; i++)
         {
-            if (wheels[i].isGrounded)
+            if (wheels[i].isGrounded && wheels[i].sidewaysFriction.stiffness > 0f)
             {
                 //trail_renderer_arr[i].startColor = new_color;
-               // trail_renderer_arr[i].endColor = new_color;
-                trail_renderer_arr[i].emitting = true;             
+                // trail_renderer_arr[i].endColor = new_color;
+                trail_renderer_arr[i].emitting = true;
                 is_on = true;
+                Booster_Slider.instance.get_gage(wheels[i].sidewaysFriction.stiffness * Time.fixedDeltaTime * Mathf.Log(value, 1.5f) * 0.5f);
             }
             else {
                 trail_renderer_arr[i].emitting = false;
@@ -755,9 +785,9 @@ public class Car : NetworkBehaviour
     [Command]
     private void throw_oil_CMD()
     {
-        GameObject go = Instantiate(net_manager.spawnPrefabs[(int)item_index.oil], transform.position + Vector3.up * 1f - transform.forward * 3.5f + transform.right*0.3f, Quaternion.LookRotation(transform.forward, transform.up));
+        GameObject go = Instantiate(net_manager.spawnPrefabs[(int)item_index.oil], transform.position + Vector3.up * 1f - transform.forward * 3.5f + transform.right*0.5f, Quaternion.LookRotation(transform.forward, transform.up));
         NetworkServer.Spawn(go);
-        go = Instantiate(net_manager.spawnPrefabs[(int)item_index.oil], transform.position + Vector3.up * 1f - transform.forward * 3.5f - transform.right * 0.3f, Quaternion.LookRotation(transform.forward, transform.up));
+        go = Instantiate(net_manager.spawnPrefabs[(int)item_index.oil], transform.position + Vector3.up * 1f - transform.forward * 3.5f - transform.right * 0.5f, Quaternion.LookRotation(transform.forward, transform.up));
         NetworkServer.Spawn(go);
     }
     [Command(requiresAuthority = false)]

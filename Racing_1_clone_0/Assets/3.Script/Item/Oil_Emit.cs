@@ -25,7 +25,7 @@ public class Oil_Emit : NetworkBehaviour
 
     private IEnumerator emit_co() {
         float elapsed_time = 0f;
-        while (elapsed_time < 5f) {
+        while (elapsed_time < 2f) {
             instantiate_oil((emit_dir + (Vector3.right * Random.Range(-0.1f, 0.1f) + Vector3.forward * Random.Range(-0.1f, 0.1f))) * (5f - elapsed_time));
             for (int i =0; i < 1f * (1+(int)elapsed_time);i++) {
                 
