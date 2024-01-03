@@ -56,7 +56,28 @@ public class NewNetworkRoomManager : NetworkRoomManager
     /// This is called on the server when a client disconnects.
     /// </summary>
     /// <param name="conn">The connection that disconnected.</param>
-    public override void OnRoomServerDisconnect(NetworkConnectionToClient conn) { }
+    public override void OnRoomServerDisconnect(NetworkConnectionToClient conn) {
+        Position_Setter ps = FindObjectOfType<Position_Setter>();
+        CarNetworkRoomPlayer temp;
+        for (int i=0; i < ps.car_arr.Length; i++) {
+            Debug.Log(ps.car_arr[i]);
+            if (ps.car_arr[i] != null) {
+                temp = ps.car_arr[i].GetComponentInChildren<CarNetworkRoomPlayer>();
+                if (temp.connection_ID == conn.connectionId)
+                {
+                    ps.remove_car(i);
+                    break;
+                }
+            }
+            else {
+                Debug.Log("remove car!");
+                ps.remove_car(i);
+                break;
+            }
+            
+        }
+        
+    }
 
     /// <summary>
     /// This is called on the server when a networked scene finishes loading.
@@ -72,7 +93,9 @@ public class NewNetworkRoomManager : NetworkRoomManager
     /// <returns>The new room-player object.</returns>
     public override GameObject OnRoomServerCreateRoomPlayer(NetworkConnectionToClient conn)
     {
-        return base.OnRoomServerCreateRoomPlayer(conn);
+        GameObject go = Instantiate(roomPlayerPrefab.gameObject, Vector3.zero, Quaternion.identity);
+        go.GetComponent<CarNetworkRoomPlayer>().connection_ID = conn.connectionId;
+        return go;
     }
 
     /// <summary>
@@ -83,9 +106,9 @@ public class NewNetworkRoomManager : NetworkRoomManager
     /// <param name="roomPlayer">The room player object for this connection.</param>
     /// <returns>A new GamePlayer object.</returns>
     public override GameObject OnRoomServerCreateGamePlayer(NetworkConnectionToClient conn, GameObject roomPlayer)
-    {        
+    {
         
-        return base.OnRoomServerCreateGamePlayer(conn, roomPlayer);
+        return base.OnRoomServerCreateGamePlayer(conn, roomPlayer);        
     }
 
     /// <summary>
@@ -114,6 +137,7 @@ public class NewNetworkRoomManager : NetworkRoomManager
         CarNetworkRoomPlayer car_room = roomPlayer.GetComponent<CarNetworkRoomPlayer>();
         car.player_index = car_room.player_index;
         car.material_index = car_room.material_index;
+        car.user_name = car_room.user_name;
         car_room.on_game_scene_load_RPC();
         //car_room.deactive_RPC();
         NetworkServer.Destroy(roomPlayer);
@@ -158,7 +182,9 @@ public class NewNetworkRoomManager : NetworkRoomManager
     /// <summary>
     /// This is a hook to allow custom behaviour when the game client exits the room.
     /// </summary>
-    public override void OnRoomClientExit() { }
+    public override void OnRoomClientExit() { 
+        
+    }
 
     /// <summary>
     /// This is called on the client when it connects to server.

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -36,6 +37,8 @@ public class LoginNetworkHUD : MonoBehaviour
             if (GUILayout.Button("Login"))
             {
                 if (login_btn()) {
+                    sql_manager.update_DB();
+                    sql_manager.get_room_data();
                     sql_manager.show_room();
                     is_login = true;
                 }               
@@ -89,13 +92,24 @@ public class LoginNetworkHUD : MonoBehaviour
             // Server + Client
             if (Application.platform != RuntimePlatform.WebGLPlayer)
             {
+                if (GUILayout.Button("LAN Host (Server + Client)"))
+                {
+                    sql_manager.create_room(true);
+                    manager.StartHost();
+                }
+            }
+            if (Application.platform != RuntimePlatform.WebGLPlayer)
+            {
                 if (GUILayout.Button("Host (Server + Client)"))
                 {
+
+                    TelepathyTransport trp = (manager.transport as TelepathyTransport);
+                    // trp.port = sql_manager.create_room();
                     sql_manager.create_room();
                     manager.StartHost();
-                    kcp2k.KcpTransport kcp = (manager.transport as kcp2k.KcpTransport);
-                    Debug.Log("IP: "+manager.networkAddress);
-                    Debug.Log("port: "+kcp.Port);
+                    //
+                    //Debug.Log("IP: "+manager.networkAddress);
+                    //Debug.Log("port: "+kcp.Port);
                 }
             }
 
@@ -103,13 +117,13 @@ public class LoginNetworkHUD : MonoBehaviour
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Client"))
             {
-              
-                kcp2k.KcpTransport kcp = (manager.transport as kcp2k.KcpTransport);
-                kcp.Port = 6666;
+                manager.networkAddress = GUILayout.TextField(manager.networkAddress);
+                //kcp2k.KcpTransport kcp = (manager.transport as kcp2k.KcpTransport);
+                //kcp.Port = 6666;
                 manager.StartClient();
             }
             // This updates networkAddress every frame from the TextField
-            manager.networkAddress = GUILayout.TextField(manager.networkAddress);
+            
             
             GUILayout.EndHorizontal();
 
@@ -215,5 +229,27 @@ public class LoginNetworkHUD : MonoBehaviour
             Log.text = "아이디 비밀번호를 확인해주세요.";
             return false;
         }
+    }
+
+    public void room_slot_button(string ip, int port)
+    {
+        if (!NetworkClient.active)
+        {
+            Uri uri = new Uri("tcp4://"+ip+":"+port);
+
+            //kcp2k.KcpTransport kcp = (manager.transport as kcp2k.KcpTransport);
+            // kcp.Port = (ushort)port;
+            //Debug.Log(kcp.Port);
+            manager.StartClient(uri);
+            //manager.networkAddress = ip;
+            //manager.StartClient();            
+        }
+    }
+
+    public void refresh_room_button()
+    {
+        sql_manager.update_DB();
+        sql_manager.get_room_data();
+        sql_manager.show_room();
     }
 }

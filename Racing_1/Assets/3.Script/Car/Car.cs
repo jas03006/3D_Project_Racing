@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Mirror;
 
 
@@ -81,6 +82,10 @@ public class Car : NetworkBehaviour
     [SyncVar]
     [SerializeField] public int lap_cnt = 0;
 
+    [SerializeField] public RectTransform name_tag;
+    [SyncVar]
+    public string user_name = "";
+
     public NewNetworkRoomManager net_manager;
     private Item_Slot item_slot_UI;
     private void Start()
@@ -91,8 +96,9 @@ public class Car : NetworkBehaviour
         wheels[1] = RFW;
         wheels[2] = LBW;
         wheels[3] = RBW;
-
+        lap_cnt = 0;
         ask_player_index();
+        init_name();
         Minimap_Manager.instance.regist_car(this);
         init_car_model();
 
@@ -110,7 +116,6 @@ public class Car : NetworkBehaviour
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();
-        lap_cnt = 0;
         enable_wheel();
         MultiManager.instance.resist_local_car(this);
         net_manager = FindObjectOfType<NewNetworkRoomManager>();
@@ -121,6 +126,8 @@ public class Car : NetworkBehaviour
     {        
         draw_speed_particle();
         draw_booster_particle();
+
+        show_name();
 
         if (!isLocalPlayer) return;
         if (is_finish || !MultiManager.instance.is_start) return;
@@ -159,6 +166,30 @@ public class Car : NetworkBehaviour
         if (!isLocalPlayer) return;
         control_car();
     }
+
+    private void init_name() {
+        name_tag = MultiManager.instance.name_tag_arr[player_index];
+        if (name_tag != null)
+        {
+            if (user_name == "")
+            {
+                StartCoroutine(update_name_co());
+            }
+            name_tag.gameObject.GetComponentInChildren<Text>().text = get_name();
+        }
+    }
+
+    private IEnumerator update_name_co() {
+        while (user_name == "") {
+            yield return new WaitForSeconds(0.1f);
+        }
+        name_tag.gameObject.GetComponentInChildren<Text>().text = get_name();
+    }
+
+    private void show_name() {
+        name_tag.position = Camera.main.WorldToScreenPoint(transform.position);
+    }
+
 
     /*[Command]
     private void control_car_CMD() {
@@ -271,8 +302,8 @@ public class Car : NetworkBehaviour
         {
             lap_check_bool_arr[i] = false;
         }
-        is_finish = true;
         lap_cnt++;
+        is_finish = true;
         init(false);
         brake(1000f);
         show_finish();
@@ -281,7 +312,11 @@ public class Car : NetworkBehaviour
     [ClientRpc]
     private void check_finish_RPC()
     {
-        check_finish();
+        //check_finish();
+        init(false);
+        brake(1000f);
+        show_finish();
+        MultiManager.instance.update_rank_final(player_index, drive_time, get_name());
     }
     [Server]
     public void update_drive_time() {
@@ -753,11 +788,18 @@ public class Car : NetworkBehaviour
         dist_from_goal = Track_Manager.instance.get_distance_from_goal(this);
     }
     public string get_name(int ind = -1) {
-        if (ind < 0)
+        if (user_name == null || user_name == "")
         {
-            return (player_index + 1) + "P";
+            if (ind < 0)
+            {
+                return (player_index + 1) + "P";
+            }
+            return (ind + 1) + "P";
         }
-        return (ind + 1) + "P";
+        else {
+            return user_name;
+        }
+        
     }
 
     [Command]

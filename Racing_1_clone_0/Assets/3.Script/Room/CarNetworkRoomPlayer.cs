@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using Mirror;
 
 /*
@@ -19,9 +20,18 @@ public class CarNetworkRoomPlayer : NetworkRoomPlayer
     [SyncVar]
     public int player_index = 0;
     [SyncVar]
+    public string user_name = "";
+    public int name_tag_index;
+    [SyncVar]
     public color_index material_index = 0;
 
     [SerializeField] private MeshRenderer car_body;
+    private Position_Setter ps;
+    public int connection_ID;
+    private void Awake()
+    {
+        ps = FindObjectOfType<Position_Setter>();
+    }
     public void set_body_material(color_index ind)
     {
         material_index = ind;
@@ -67,13 +77,15 @@ public class CarNetworkRoomPlayer : NetworkRoomPlayer
     public override void Start()
     {
         base.Start();
-        if (isServer) {
+        /*if (isServer) {
             Position_Setter ps = FindObjectOfType<Position_Setter>();
             ps.locate_car(this.gameObject);
             set_car_room_pos(transform.position , transform.rotation);
-        }
+        }*/
         
     }
+
+    
     public void Update()
     {
         transform.Rotate(0f,Time.deltaTime*10f, 0f);
@@ -120,7 +132,48 @@ public class CarNetworkRoomPlayer : NetworkRoomPlayer
     public override void OnStartLocalPlayer() {
         //Debug.Log("set local room car");
         Color_Manager.instance.local_car_room = this;
+        set_name_CMD(SQL_Manager.instance.info.User_Name);
     }
+
+    [Command]
+    public void set_name_CMD(string name_) {
+        user_name = name_;
+        set_name_tag(name_);
+        set_name_tag_RPC(name_tag_index, name_);
+
+        for (int i = 0; i < name_tag_index; i++)
+        {
+            set_name_tag_TRPC(i, ps.car_arr[i].transform.position, ps.car_arr[i].GetComponentInChildren<CarNetworkRoomPlayer>().user_name);
+        }
+    }
+    public void set_name_tag( string name_) {
+        ps.locate_car(this.gameObject);
+        set_car_room_pos(transform.position, transform.rotation);
+        ps.name_tag_arr[name_tag_index].position = Camera.main.WorldToScreenPoint(transform.position) + Vector3.up * 210f;
+        ps.name_tag_arr[name_tag_index].GetComponentInChildren<Text>().text = name_;
+    }
+    [ClientRpc]
+    public void set_name_tag_RPC(int index_, string name_) {     
+        ps.name_tag_arr[index_].position = Camera.main.WorldToScreenPoint(transform.position) + Vector3.up * 210f;
+        ps.name_tag_arr[index_].GetComponentInChildren<Text>().text = name_;
+    }
+    [TargetRpc]
+    public void set_name_tag_TRPC(int index_, Vector3 pos_, string name_)
+    {
+        ps.name_tag_arr[index_].position = Camera.main.WorldToScreenPoint(pos_) + Vector3.up * 210f;
+        ps.name_tag_arr[index_].GetComponentInChildren<Text>().text = name_;
+    }
+
+  /*  [Command]
+    public void hide_name_tag_CMD(int index_) {
+        ps.name_tag_arr[index_].position = Vector3.up * -1000f;
+        hide_name_tag_RPC(index_);
+    }
+
+    [ClientRpc]
+    public void hide_name_tag_RPC(int index_) {
+        ps.name_tag_arr[index_].position = Vector3.up * -1000f;
+    }*/
 
     /// <summary>
     /// This is invoked on behaviours that have authority, based on context and <see cref="NetworkIdentity.hasAuthority">NetworkIdentity.hasAuthority</see>.
@@ -149,8 +202,11 @@ public class CarNetworkRoomPlayer : NetworkRoomPlayer
     /// <summary>
     /// This is a hook that is invoked on all player objects when exiting the room.
     /// </summary>
-    public override void OnClientExitRoom() { }
+    public override void OnClientExitRoom() {
+        //hide_name_tag_CMD(name_tag_index);
+    }
 
+    
     #endregion
 
     #region SyncVar Hooks

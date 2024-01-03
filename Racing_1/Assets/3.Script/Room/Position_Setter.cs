@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Position_Setter : MonoBehaviour
 {
     //[SerializeField] private NewNetworkRoomManager nrm;
     [SerializeField] public GameObject[] pos_arr;
+    [SerializeField] public RectTransform[] name_tag_arr;
     [SerializeField] public GameObject[] car_arr;
     private void Start()
     {
@@ -26,6 +28,7 @@ public class Position_Setter : MonoBehaviour
             if (car_arr[i] == null) {
                 car_arr[i] = car;
                 car.transform.position = pos_arr[i].transform.position;
+                car.GetComponentInChildren<CarNetworkRoomPlayer>().name_tag_index = i;                
                 return;
             }
         }
@@ -41,5 +44,10 @@ public class Position_Setter : MonoBehaviour
                 return;
             }
         }
+    }
+    public void remove_car(int index_)
+    {
+        car_arr[index_] = null;
+        name_tag_arr[index_].position = Vector3.down * -1000f;
     }
 }
