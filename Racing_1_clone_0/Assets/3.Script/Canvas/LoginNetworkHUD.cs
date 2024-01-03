@@ -17,7 +17,7 @@ public class LoginNetworkHUD : MonoBehaviour
 
     NetworkRoomManager manager;
     SceneManager scene_manager;
-    [SerializeField] private SQL_Manager sql_manager;
+    //[SerializeField] private SQL_Manager sql_manager;
 
     public int offsetX;
     public int offsetY;
@@ -27,25 +27,38 @@ public class LoginNetworkHUD : MonoBehaviour
     void Awake()
     {
         manager = GetComponent<NetworkRoomManager>();
+        
     }
-
+    
     void OnGUI()
     {
-
+        
         if (!is_login) {
-            GUILayout.BeginArea(new Rect( offsetX, 40 + offsetY, 250, 9999));
-            if (GUILayout.Button("Login"))
+            if (SQL_Manager.instance.info != null)
             {
-                if (login_btn()) {
-                    sql_manager.update_DB();
-                    sql_manager.get_room_data();
-                    sql_manager.show_room();
-                    is_login = true;
-                }               
-                
+                is_login = true;
+                id_i.gameObject.SetActive(false);
+                pwd_i.gameObject.SetActive(false);
+                Log.gameObject.SetActive(false);
+                SQL_Manager.instance.update_DB();
+                SQL_Manager.instance.get_room_data();
+                SQL_Manager.instance.show_room();
             }
-            GUILayout.EndArea();
-            return;
+            else { 
+                GUILayout.BeginArea(new Rect( offsetX, 40 + offsetY, 250, 9999));
+                if (GUILayout.Button("Login"))
+                {
+                    if (login_btn()) {
+                        SQL_Manager.instance.update_DB();
+                        SQL_Manager.instance.get_room_data();
+                        SQL_Manager.instance.show_room();
+                        is_login = true;
+                    }               
+                
+                }
+                GUILayout.EndArea();
+                return;
+            }
         }
        
         if (!NetworkClient.isConnected && !NetworkServer.active)
@@ -94,7 +107,7 @@ public class LoginNetworkHUD : MonoBehaviour
             {
                 if (GUILayout.Button("LAN Host (Server + Client)"))
                 {
-                    sql_manager.create_room(true);
+                    SQL_Manager.instance.create_room(true);
                     manager.StartHost();
                 }
             }
@@ -105,7 +118,7 @@ public class LoginNetworkHUD : MonoBehaviour
 
                     TelepathyTransport trp = (manager.transport as TelepathyTransport);
                     // trp.port = sql_manager.create_room();
-                    sql_manager.create_room();
+                    SQL_Manager.instance.create_room();
                     manager.StartHost();
                     //
                     //Debug.Log("IP: "+manager.networkAddress);
@@ -248,8 +261,8 @@ public class LoginNetworkHUD : MonoBehaviour
 
     public void refresh_room_button()
     {
-        sql_manager.update_DB();
-        sql_manager.get_room_data();
-        sql_manager.show_room();
+        SQL_Manager.instance.update_DB();
+        SQL_Manager.instance.get_room_data();
+        SQL_Manager.instance.show_room();
     }
 }

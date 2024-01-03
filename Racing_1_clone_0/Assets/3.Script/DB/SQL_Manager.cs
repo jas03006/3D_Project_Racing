@@ -41,9 +41,10 @@ public class SQL_Manager : MonoBehaviour
             DontDestroyOnLoad(this.gameObject);
         }
         else {
+            instance.find_room_slot();
             Destroy(this.gameObject);
             return;
-        }
+        }        
 
         db_path = Application.dataPath + "/Database";
         string server_info = server_set(db_path);
@@ -63,6 +64,9 @@ public class SQL_Manager : MonoBehaviour
         }
     }
 
+    public void find_room_slot() {
+        room_go_arr = FindObjectsOfType<Room_Slot>();
+    }
     private string server_set(string path) {
         if (!File.Exists(path)) {
             Directory.CreateDirectory(path);

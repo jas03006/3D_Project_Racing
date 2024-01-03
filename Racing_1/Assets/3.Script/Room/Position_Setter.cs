@@ -48,6 +48,6 @@ public class Position_Setter : MonoBehaviour
     public void remove_car(int index_)
     {
         car_arr[index_] = null;
-        name_tag_arr[index_].position = Vector3.down * -1000f;
+        name_tag_arr[index_].position = Vector3.right * -2000f;
     }
 }

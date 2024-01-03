@@ -149,12 +149,12 @@ public class CarNetworkRoomPlayer : NetworkRoomPlayer
     public void set_name_tag( string name_) {
         ps.locate_car(this.gameObject);
         set_car_room_pos(transform.position, transform.rotation);
-        ps.name_tag_arr[name_tag_index].position = Camera.main.WorldToScreenPoint(transform.position) + Vector3.up * 210f;
+        ps.name_tag_arr[name_tag_index].position = Camera.main.WorldToScreenPoint(transform.position) + Vector3.up * 215f;
         ps.name_tag_arr[name_tag_index].GetComponentInChildren<Text>().text = name_;
     }
     [ClientRpc]
     public void set_name_tag_RPC(int index_, string name_) {     
-        ps.name_tag_arr[index_].position = Camera.main.WorldToScreenPoint(transform.position) + Vector3.up * 210f;
+        ps.name_tag_arr[index_].position = Camera.main.WorldToScreenPoint(transform.position) + Vector3.up * 215f;
         ps.name_tag_arr[index_].GetComponentInChildren<Text>().text = name_;
     }
     [TargetRpc]
@@ -164,16 +164,6 @@ public class CarNetworkRoomPlayer : NetworkRoomPlayer
         ps.name_tag_arr[index_].GetComponentInChildren<Text>().text = name_;
     }
 
-  /*  [Command]
-    public void hide_name_tag_CMD(int index_) {
-        ps.name_tag_arr[index_].position = Vector3.up * -1000f;
-        hide_name_tag_RPC(index_);
-    }
-
-    [ClientRpc]
-    public void hide_name_tag_RPC(int index_) {
-        ps.name_tag_arr[index_].position = Vector3.up * -1000f;
-    }*/
 
     /// <summary>
     /// This is invoked on behaviours that have authority, based on context and <see cref="NetworkIdentity.hasAuthority">NetworkIdentity.hasAuthority</see>.
@@ -203,7 +193,6 @@ public class CarNetworkRoomPlayer : NetworkRoomPlayer
     /// This is a hook that is invoked on all player objects when exiting the room.
     /// </summary>
     public override void OnClientExitRoom() {
-        //hide_name_tag_CMD(name_tag_index);
     }
 
     
