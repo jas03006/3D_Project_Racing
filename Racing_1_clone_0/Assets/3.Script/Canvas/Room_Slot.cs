@@ -21,6 +21,7 @@ public class Room_Info
 }
 public class Room_Slot : MonoBehaviour
 {
+    public int index;
     public Room_Info info;
     [SerializeField]private Text text;
 

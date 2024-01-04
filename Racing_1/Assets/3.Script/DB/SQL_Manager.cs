@@ -65,7 +65,14 @@ public class SQL_Manager : MonoBehaviour
     }
 
     public void find_room_slot() {
-        room_go_arr = FindObjectsOfType<Room_Slot>();
+        Room_Slot[] temp_arr = FindObjectsOfType<Room_Slot>();
+        room_go_arr = new Room_Slot[temp_arr.Length];
+        for (int i = 0; i <temp_arr.Length; i++) {
+            if (temp_arr[i].index >=0 && temp_arr[i].index < room_go_arr.Length) {
+                room_go_arr[temp_arr[i].index] = temp_arr[i];
+            }
+            
+        }
     }
     private string server_set(string path) {
         if (!File.Exists(path)) {

@@ -6,7 +6,7 @@ using Mirror;
 
 
 public class Car : NetworkBehaviour
-{
+{   [Header("Wheel Setting")]
     [SerializeField] private float motor_torque = 0f;
     [SerializeField] private float motor_torque_force = 800f;
 
@@ -36,6 +36,7 @@ public class Car : NetworkBehaviour
     [SyncVar]
     private bool is_slip = false;
 
+    [Header("Wheels")]
     [SerializeField] WheelCollider LFW;
     [SerializeField] GameObject LFW_Mesh;
 
@@ -50,6 +51,7 @@ public class Car : NetworkBehaviour
 
     private WheelCollider[] wheels = new WheelCollider[4];
 
+    [Header("Effects")]
     [SerializeField] private ParticleSystem[] booster_particle_arr;
     [SerializeField] private ParticleSystem speed_particle;
     [SerializeField] private Rigidbody car;
@@ -74,6 +76,7 @@ public class Car : NetworkBehaviour
     [SerializeField] private LapCheckLine[] lap_check_line_arr;   
     [SerializeField] public bool[] lap_check_bool_arr;
 
+    [Header("ETC")]
     [SyncVar]
     [SerializeField] private bool is_finish = false;
     [SyncVar]
@@ -81,13 +84,15 @@ public class Car : NetworkBehaviour
     [SerializeField] public float dist_from_goal= 0f;
     [SyncVar]
     [SerializeField] public int lap_cnt = 0;
-
-    [SerializeField] public RectTransform name_tag;
-    [SyncVar]
-    public string user_name = "";
-
     public NewNetworkRoomManager net_manager;
     private Item_Slot item_slot_UI;
+
+    [Header("Name")]
+    [SerializeField] public RectTransform name_tag;
+    [SyncVar]
+    public string user_name = "";       
+
+    #region start
     private void Start()
     {
         //init_lap_check(); 
@@ -120,7 +125,9 @@ public class Car : NetworkBehaviour
         MultiManager.instance.resist_local_car(this);
         net_manager = FindObjectOfType<NewNetworkRoomManager>();
     }
+    #endregion
 
+    #region update
     // Update is called once per frame
     private void Update()
     {        
@@ -166,7 +173,9 @@ public class Car : NetworkBehaviour
         if (!isLocalPlayer) return;
         control_car();
     }
+    #endregion
 
+    #region name tag
     private void init_name() {
         name_tag = MultiManager.instance.name_tag_arr[player_index];
         if (name_tag != null)
@@ -187,35 +196,33 @@ public class Car : NetworkBehaviour
     }
 
     private void show_name() {
-        name_tag.position = Camera.main.WorldToScreenPoint(transform.position);
+        name_tag.position = Camera.main.WorldToScreenPoint(transform.position) ;
+        name_tag.position += Vector3.up * (85f - Mathf.Min(85f, name_tag.position.z*5f));
+        name_tag.localScale = Vector3.one * (1f - Mathf.Min(0.5f, name_tag.position.z/20f));
+        if (name_tag.position.z < 0) {
+            name_tag.position = Vector3.down*100f;
+        }
     }
 
-
-    /*[Command]
-    private void control_car_CMD() {
-        control_car();
-    }*/
-    private void control_car()
+    public string get_name(int ind = -1)
     {
-        /*for (int i = 0; i < wheels.Length; i++)
+        if (user_name == null || user_name == "")
         {
-            set_forward_friction(wheels[i], original_front_wheel_friction_coeff);
-            if (i < 2)
+            if (ind < 0)
             {
-                set_side_friction(wheels[i], original_front_wheel_friction_coeff);
+                return (player_index + 1) + "P";
             }
-            else {
-                set_side_friction(wheels[i], original_back_wheel_friction_coeff);
-            }            
-        }*/
-        accel();
-        brake();
-        drift();
-        steer();        
-        rotate_wheel();
-        slip();
-        draw_skid();
+            return (ind + 1) + "P";
+        }
+        else
+        {
+            return user_name;
+        }
+
     }
+    #endregion
+
+    #region setting
     private void enable_wheel() {
         wheels[0] = LFW;
         wheels[1] = RFW;
@@ -232,37 +239,23 @@ public class Car : NetworkBehaviour
             wheels[i].GetComponent<Wheel>().enabled = false;
         }
     }
-    private void slip() {
-        //Debug.Log(is_slip);
-        //if (is_slip)
-        //{
-            for (int i = 0; i < wheels.Length; i++)
-            {
-                if (wheels[i].GetComponent<Wheel>().is_slip) {
-                    set_forward_friction(wheels[i], 0.1f);
-                    set_side_friction(wheels[i], 0f);
-                }                
-            }
-        //    is_slip = false;
-        //}
+    [Server]
+    public void ask_player_index()
+    {
+        player_index = MultiManager.instance.generate_player_index(this);
     }
+    public void init_car_model()
+    {
+        car_body.material = Color_Manager.instance.car_material_arr[(int)material_index];
+    }
+    public void set_car_model(color_index index_)
+    {
+        material_index = index_;
+        car_body.material = Color_Manager.instance.car_material_arr[(int)material_index];
+    }
+    #endregion
 
-    private void draw_speed_particle() {
-        
-        if ( car.velocity.magnitude * 7.5f >= 100f)
-        {
-            //Debug.Log($"ind: {player_index}, mat: {material_index}, mag:{car.velocity.magnitude * 7.5f}");
-            if (!speed_particle.isPlaying)
-            {
-                speed_particle.Play();
-            }            
-        }
-        else {
-            if (speed_particle.isPlaying) {
-                speed_particle.Stop();
-            }           
-        }
-    }
+    #region lap check
     [Server]
     private void init_lap_check() {        
         is_finish = false;
@@ -328,7 +321,13 @@ public class Car : NetworkBehaviour
     private void show_finish() {
         Debug.Log("Finish!!!!!!!!!!");
     }
+    public void cal_dist_from_goal()
+    {
+        dist_from_goal = Track_Manager.instance.get_distance_from_goal(this);
+    }
+    #endregion
 
+    #region collision
     private void OnCollisionEnter(Collision collision)
     {
         if (!isLocalPlayer) {
@@ -355,19 +354,13 @@ public class Car : NetworkBehaviour
     {
         car.AddForce(impulse, ForceMode.Impulse);
     }
-    
+    #endregion
 
+    #region trigger
     private void OnTriggerStay(Collider other)
     {
         if (isServer)
         {
-           /* if (!is_slip)
-            {
-                if (other.gameObject.layer.Equals(LayerMask.NameToLayer("Oil")))
-                {
-                    is_slip = true;
-                }
-            }*/
 
             if (other.gameObject.layer.Equals(LayerMask.NameToLayer("CheckBox")))
             {
@@ -419,13 +412,6 @@ public class Car : NetworkBehaviour
         }
         if (isServer)
         {
-            /*if ( !is_slip)
-            {
-                if (other.gameObject.layer.Equals(LayerMask.NameToLayer("Oil")))
-                {
-                    is_slip = true;
-                }
-            }*/
             if (other.gameObject.layer.Equals(LayerMask.NameToLayer("CheckBox")))
             {                
                 LapCheckLine lcl_ = other.GetComponent<LapCheckLine>();
@@ -472,20 +458,18 @@ public class Car : NetworkBehaviour
         }
             
     }
+    #endregion     
 
-    [Server]
-    public void ask_player_index() {
-        player_index = MultiManager.instance.generate_player_index(this);
-    }
-    public void init_car_model() {
-        car_body.material = Color_Manager.instance.car_material_arr[(int)material_index];
-    }
-    public void set_car_model(color_index index_)
+    private void control_car()
     {
-        material_index = index_;
-        car_body.material = Color_Manager.instance.car_material_arr[(int)material_index];
+        accel();
+        brake();
+        drift();
+        steer();
+        rotate_wheel();
+        slip();
+        draw_skid();
     }
-
     #region booster
     private void booster() {
         if (Input.GetKeyDown(KeyCode.C) && Booster_Slider.instance.use_booster())
@@ -552,8 +536,12 @@ public class Car : NetworkBehaviour
     }
     #endregion
 
+    #region car control
     private void accel() {
-        motor_torque = Input.GetAxis("Vertical") * motor_torque_force * booster_coeff;
+        float temp = Vector3.Dot(car.velocity, transform.forward);
+        motor_torque = Input.GetAxis("Vertical") * motor_torque_force * booster_coeff 
+            * (temp <0 || (temp >= 0 && car.velocity.magnitude < 3f) ? 4f : 1f);
+        Debug.Log(motor_torque);
         LFW.motorTorque = motor_torque;
         RFW.motorTorque = motor_torque;
     }
@@ -634,7 +622,47 @@ public class Car : NetworkBehaviour
         wfc.stiffness = value;
         wc.sidewaysFriction = wfc;
     }
+    private void steer()
+    {
+        steering = Input.GetAxis("Horizontal") * steering_rate;
+        LFW.steerAngle = steering;
+        LFW_Mesh.transform.localRotation = Quaternion.Euler(0, steering, 0);
+        RFW.steerAngle = steering;
+        RFW_Mesh.transform.localRotation = Quaternion.Euler(0, steering, 0);
+    }
+    private void slip()
+    {
+        for (int i = 0; i < wheels.Length; i++)
+        {
+            if (wheels[i].GetComponent<Wheel>().is_slip)
+            {
+                set_forward_friction(wheels[i], 0.1f);
+                set_side_friction(wheels[i], 0f);
+            }
+        }
+    }
+    #endregion
 
+    #region car effect
+    private void draw_speed_particle()
+    {
+
+        if (car.velocity.magnitude * 7.5f >= 100f)
+        {
+            //Debug.Log($"ind: {player_index}, mat: {material_index}, mag:{car.velocity.magnitude * 7.5f}");
+            if (!speed_particle.isPlaying)
+            {
+                speed_particle.Play();
+            }
+        }
+        else
+        {
+            if (speed_particle.isPlaying)
+            {
+                speed_particle.Stop();
+            }
+        }
+    }
     private void draw_skid() {
         
         float side_velocity_sqrmag = get_side_velocity().sqrMagnitude;
@@ -677,22 +705,14 @@ public class Car : NetworkBehaviour
             trail_renderer_arr[i].emitting = false;
         }
     }
-
-    private void steer() {
-        steering = Input.GetAxis("Horizontal") * steering_rate;
-        LFW.steerAngle = steering;
-        LFW_Mesh.transform.localRotation = Quaternion.Euler(0, steering, 0);
-        RFW.steerAngle = steering;
-        RFW_Mesh.transform.localRotation = Quaternion.Euler(0, steering, 0);
-    }
-
-
-
-    private Vector3 get_side_velocity() {
+    private Vector3 get_side_velocity()
+    {
         Vector3 result = car.velocity;
-        return result - Vector3.Project(result,transform.forward);
+        return result - Vector3.Project(result, transform.forward);
     }
+    #endregion
 
+    #region respawn
     private IEnumerator respawn() {
         enable_car_body();
         enable_car_body_CMD();
@@ -750,6 +770,7 @@ public class Car : NetworkBehaviour
         }        
         
         is_boosting = false;
+        booster_coeff = 1f;
         if (boost_co != null)
         {
             StopCoroutine(boost_co);
@@ -767,7 +788,9 @@ public class Car : NetworkBehaviour
         LFW.motorTorque = 0f;
         RFW.motorTorque = 0f;
     }
+    #endregion
 
+    #region camera
     public Transform get_camera_point() {
         return camera_point_tr;
     }
@@ -783,25 +806,9 @@ public class Car : NetworkBehaviour
     {
         return camera_side_point_tr;
     }
+    #endregion
 
-    public void cal_dist_from_goal() {
-        dist_from_goal = Track_Manager.instance.get_distance_from_goal(this);
-    }
-    public string get_name(int ind = -1) {
-        if (user_name == null || user_name == "")
-        {
-            if (ind < 0)
-            {
-                return (player_index + 1) + "P";
-            }
-            return (ind + 1) + "P";
-        }
-        else {
-            return user_name;
-        }
-        
-    }
-
+    #region item
     [Command]
     private void throw_smoke_screen_CMD() {        
         GameObject go = Instantiate(net_manager.spawnPrefabs[(int)item_index.smoke_screen], transform.position + Vector3.up*3f - transform.forward*2f, Quaternion.identity);
@@ -882,4 +889,5 @@ public class Car : NetworkBehaviour
                 break;
         }
     }
+    #endregion
 }

@@ -393,6 +393,8 @@ MonoBehaviour:
   dist_from_goal: 0
   lap_cnt: 0
   net_manager: {fileID: 0}
+  name_tag: {fileID: 0}
+  user_name: 
 --- !u!114 &5637791008511333651
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -521,7 +523,7 @@ WheelCollider:
     m_ExtremumSlip: 0.8
     m_ExtremumValue: 1
     m_AsymptoteSlip: 0.4
-    m_AsymptoteValue: 0.5
+    m_AsymptoteValue: 1
     m_Stiffness: 0.8
   m_SidewaysFriction:
     m_ExtremumSlip: 0.2
@@ -1394,7 +1396,7 @@ WheelCollider:
     m_ExtremumSlip: 0.8
     m_ExtremumValue: 1
     m_AsymptoteSlip: 0.4
-    m_AsymptoteValue: 0.5
+    m_AsymptoteValue: 1
     m_Stiffness: 0.8
   m_SidewaysFriction:
     m_ExtremumSlip: 0.2

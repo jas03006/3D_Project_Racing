@@ -509,6 +509,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Room (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 2206009495699292791, guid: de85e0655d950a642aa6a7b49951f2d9, type: 3}
+      propertyPath: index
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: de85e0655d950a642aa6a7b49951f2d9, type: 3}
 --- !u!224 &89368956 stripped
@@ -930,6 +934,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Room (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 2206009495699292791, guid: de85e0655d950a642aa6a7b49951f2d9, type: 3}
+      propertyPath: index
+      value: 4
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: de85e0655d950a642aa6a7b49951f2d9, type: 3}
 --- !u!224 &898172277 stripped
@@ -1174,6 +1182,10 @@ PrefabInstance:
     - target: {fileID: 2206009495699292789, guid: de85e0655d950a642aa6a7b49951f2d9, type: 3}
       propertyPath: m_Name
       value: Room
+      objectReference: {fileID: 0}
+    - target: {fileID: 2206009495699292791, guid: de85e0655d950a642aa6a7b49951f2d9, type: 3}
+      propertyPath: index
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: de85e0655d950a642aa6a7b49951f2d9, type: 3}
@@ -1545,6 +1557,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Room (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 2206009495699292791, guid: de85e0655d950a642aa6a7b49951f2d9, type: 3}
+      propertyPath: index
+      value: 6
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: de85e0655d950a642aa6a7b49951f2d9, type: 3}
 --- !u!224 &1106324570 stripped
@@ -1789,6 +1805,10 @@ PrefabInstance:
     - target: {fileID: 2206009495699292789, guid: de85e0655d950a642aa6a7b49951f2d9, type: 3}
       propertyPath: m_Name
       value: Room
+      objectReference: {fileID: 0}
+    - target: {fileID: 2206009495699292791, guid: de85e0655d950a642aa6a7b49951f2d9, type: 3}
+      propertyPath: index
+      value: 5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: de85e0655d950a642aa6a7b49951f2d9, type: 3}
@@ -2496,6 +2516,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Room
       objectReference: {fileID: 0}
+    - target: {fileID: 2206009495699292791, guid: de85e0655d950a642aa6a7b49951f2d9, type: 3}
+      propertyPath: index
+      value: 3
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: de85e0655d950a642aa6a7b49951f2d9, type: 3}
 --- !u!224 &1715176148 stripped
@@ -2687,6 +2711,10 @@ PrefabInstance:
     - target: {fileID: 2206009495699292789, guid: de85e0655d950a642aa6a7b49951f2d9, type: 3}
       propertyPath: m_Name
       value: Room (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 2206009495699292791, guid: de85e0655d950a642aa6a7b49951f2d9, type: 3}
+      propertyPath: index
+      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: de85e0655d950a642aa6a7b49951f2d9, type: 3}

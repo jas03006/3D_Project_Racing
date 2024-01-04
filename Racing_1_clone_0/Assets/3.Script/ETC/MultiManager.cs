@@ -216,7 +216,7 @@ public class MultiManager : NetworkBehaviour
         }
         for (int i = final_rank_index_list.Count; i < car_list.Count; i++)
         {
-            string str = car_rank_arr[i].get_name() + " " + (int)car_rank_arr[i].dist_from_goal;
+            string str = car_rank_arr[i].get_name();// + " " + (int)car_rank_arr[i].dist_from_goal;
             update_rank_text(i, str);
             update_rank_text_Rpc(i, str);
         }
